@@ -71,7 +71,7 @@ export const MerchantAccountModal: React.FC<MerchantAccountModalProps> = ({
     setAccountNumber('4145392198');
     setIfscCode('KKBK0000286');
     setAccountType('Savings Account');
-    setSupportEmail('capitalsurakshaclub@gmail.com');
+    setSupportEmail('tradeos.crypto@gmail.com');
     setSupportWhatsApp('+91 8587965337');
     setRazorpayKeyId('');
     setRazorpayPaymentLink('');
@@ -285,7 +285,7 @@ export const MerchantAccountModal: React.FC<MerchantAccountModalProps> = ({
                     type="email"
                     value={supportEmail}
                     onChange={(e) => setSupportEmail(e.target.value)}
-                    placeholder="capitalsurakshaclub@gmail.com"
+                    placeholder="tradeos.crypto@gmail.com"
                     className="w-full bg-[#0E131F] border border-[#1C263C] rounded-lg px-3 py-2 text-white font-mono focus:border-emerald-500 focus:outline-none"
                   />
                 </div>

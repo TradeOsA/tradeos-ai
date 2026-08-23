@@ -21,7 +21,7 @@ const DEFAULT_CONFIG: MerchantPaymentConfig = {
   accountNumber: '4145392198',
   ifscCode: 'KKBK0000286',
   accountType: 'Savings Account',
-  supportEmail: 'capitalsurakshaclub@gmail.com',
+  supportEmail: 'tradeos.crypto@gmail.com',
   supportWhatsApp: '+91 8587965337',
   razorpayKeyId: '',
   razorpayPaymentLink: '',

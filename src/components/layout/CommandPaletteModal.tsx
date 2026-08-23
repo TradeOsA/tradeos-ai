@@ -105,7 +105,7 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({
   ];
 
   const actionItems = [
-    { id: 'act-support', type: 'action', title: 'Contact Support (capitalsurakshaclub@gmail.com)', desc: '24/7 priority live assistance, ticket submission & FAQs', icon: Headphones, action: () => onOpenSupport && onOpenSupport(), category: 'Actions' },
+    { id: 'act-support', type: 'action', title: 'Contact Support (tradeos.crypto@gmail.com)', desc: '24/7 priority live assistance, ticket submission & FAQs', icon: Headphones, action: () => onOpenSupport && onOpenSupport(), category: 'Actions' },
     { id: 'act-pricing', type: 'action', title: 'View Pro Plans & Pricing (14-Day Free Trial)', desc: 'Unlock broker auto-sync, prop firm shield, and AI chart audits', icon: Crown, action: () => onOpenPricing && onOpenPricing(), category: 'Actions' },
     { id: 'act-new-trade', type: 'action', title: 'Log New Trade Entry', desc: 'Record a new position with stop-loss, targets, and thesis', icon: Plus, action: onOpenNewTrade, category: 'Actions' },
     { id: 'act-broker-import', type: 'action', title: 'Import Broker Statement / CSV', desc: 'Auto-sync trades from Zerodha, Dhan, Binance, Bybit, MT4/5, or CSV', icon: BookOpen, action: () => onNavigateTab('journal'), category: 'Actions' },

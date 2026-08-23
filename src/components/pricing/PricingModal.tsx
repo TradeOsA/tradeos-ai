@@ -93,7 +93,7 @@ export const PricingModal: React.FC<PricingModalProps> = ({
   // Live 10:00 Countdown Timer
   const [timeLeft, setTimeLeft] = useState(600);
 
-  const OFFICIAL_SUPPORT_EMAIL = merchantConfig.supportEmail || 'capitalsurakshaclub@gmail.com';
+  const OFFICIAL_SUPPORT_EMAIL = merchantConfig.supportEmail || 'tradeos.crypto@gmail.com';
   const OFFICIAL_WHATSAPP_NUMBER = merchantConfig.supportWhatsApp || '+91 8587965337';
   const OFFICIAL_UPI_ID = merchantConfig.upiId || '8587965337@paytm';
   const OFFICIAL_PAYEE_NAME = merchantConfig.payeeName || 'Ajay Soni';

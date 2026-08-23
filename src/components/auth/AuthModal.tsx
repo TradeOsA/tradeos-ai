@@ -140,7 +140,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
       const realGoogleUser: UserProfile = {
         id: fbUser.uid,
         name: fbUser.displayName || userDocData?.name || 'Pro Trader',
-        email: fbUser.email || userDocData?.email || 'capitalsurakshaclub@gmail.com',
+        email: fbUser.email || userDocData?.email || 'tradeos.crypto@gmail.com',
         avatarUrl: fbUser.photoURL || userDocData?.avatarUrl || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80',
         experienceLevel: userDocData?.experienceLevel || user.experienceLevel || 'Intermediate',
         accountBalance: userDocData?.accountBalance ?? user.accountBalance ?? 50000,

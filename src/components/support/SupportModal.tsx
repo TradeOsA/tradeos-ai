@@ -37,7 +37,7 @@ export const SupportModal: React.FC<SupportModalProps> = ({
   onOpenPolicies,
 }) => {
   const { config } = useMerchantPayment();
-  const OFFICIAL_EMAIL = config.supportEmail || 'capitalsurakshaclub@gmail.com';
+  const OFFICIAL_EMAIL = config.supportEmail || 'tradeos.crypto@gmail.com';
   const OFFICIAL_WHATSAPP_NUMBER = config.supportWhatsApp || '+91 8587965337';
   const OFFICIAL_WHATSAPP_RAW = (config.supportWhatsApp || '8587965337').replace(/\D/g, '');
   const WHATSAPP_LINK = `https://wa.me/${OFFICIAL_WHATSAPP_RAW}?text=Hi%20TradeosAi%20Support%20Team,%20I%20am%20${encodeURIComponent(userName)}%20and%20I%20need%20assistance%20with%20TradeosAi.`;

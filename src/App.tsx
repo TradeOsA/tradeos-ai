@@ -246,7 +246,7 @@ export default function App() {
           const loggedInUser: UserProfile = {
             id: fbUser.uid,
             name: fbUser.displayName || loadedProfile.name || 'Pro Trader',
-            email: fbUser.email || loadedProfile.email || 'capitalsurakshaclub@gmail.com',
+            email: fbUser.email || loadedProfile.email || 'tradeos.crypto@gmail.com',
             avatarUrl: fbUser.photoURL || loadedProfile.avatarUrl || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80',
             experienceLevel: loadedProfile.experienceLevel || user.experienceLevel || 'Intermediate',
             accountBalance: loadedProfile.accountBalance ?? user.accountBalance ?? 50000,

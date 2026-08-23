@@ -35,7 +35,7 @@ export const LegalPoliciesModal: React.FC<LegalPoliciesModalProps> = ({
 
   if (!isOpen) return null;
 
-  const OFFICIAL_EMAIL = config.supportEmail || 'capitalsurakshaclub@gmail.com';
+  const OFFICIAL_EMAIL = config.supportEmail || 'tradeos.crypto@gmail.com';
   const OFFICIAL_WHATSAPP = config.supportWhatsApp || '+91 8587965337';
   const WHATSAPP_LINK = `https://wa.me/918587965337?text=Hi%20TradeosAi%20Support%20Team,%20I%20have%20a%20legal%2Fpolicy%20inquiry.`;
 
