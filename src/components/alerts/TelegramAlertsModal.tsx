@@ -624,7 +624,7 @@ export const TelegramAlertsModal: React.FC<TelegramAlertsModalProps> = ({
                 <div className="p-2.5 rounded-lg bg-[#0E131F] border border-[#1C263C] space-y-1">
                   <strong className="text-teal-300 block">Step 1: Create your Bot in 30 Seconds</strong>
                   <p>1. Open Telegram and search for <code>@BotFather</code>.</p>
-                  <p>2. Send <code>/newbot</code>, choose a name and username (e.g. <i>CapitalSurakshaAlerts_bot</i>).</p>
+                  <p>2. Send <code>/newbot</code>, choose a name and username (e.g. <i>TradeOSAlerts_bot</i>).</p>
                   <p>3. Copy the HTTP API <strong>Token</strong> (e.g. <code>123456789:ABCdefGhIJK...</code>) and paste below.</p>
                 </div>
                 <div className="p-2.5 rounded-lg bg-[#0E131F] border border-[#1C263C] space-y-1">

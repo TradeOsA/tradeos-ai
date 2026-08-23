@@ -1658,7 +1658,7 @@ app.post('/api/alerts/telegram/auto-detect-chat-id', async (req: Request, res: R
 function sanitizeChatIdInput(input?: string): string {
   if (!input) return '';
   let clean = String(input).trim();
-  // If user pasted a t.me URL e.g. https://t.me/CapitalSuraksha or t.me/username
+  // If user pasted a t.me URL e.g. https://t.me/TradeOSAlerts or t.me/username
   if (clean.includes('t.me/')) {
     const after = clean.split('t.me/')[1]?.split('?')[0]?.split('/')[0]?.trim();
     if (after && !after.startsWith('+') && !after.startsWith('joinchat')) {
