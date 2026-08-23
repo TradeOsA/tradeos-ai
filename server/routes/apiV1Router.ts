@@ -472,7 +472,10 @@ apiV1Router.post('/payments/create-payment-link', async (req: Request, res: Resp
 
     // Standard redirect fallback if no live API link could be minted
     if (!paymentLinkUrl) {
-      paymentLinkUrl = String(tier).toUpperCase() === 'PRO'
+      const upperTier = String(tier).toUpperCase();
+      paymentLinkUrl = upperTier === 'PRO'
+        ? 'https://rzp.io/rzp/ABsSSLW'
+        : upperTier === 'INSTITUTIONAL' || upperTier === 'ELITE'
         ? 'https://rzp.io/rzp/EIkNygc'
         : `https://rzp.io/l/tradeos-${tier.toLowerCase()}-${billingCycle.toLowerCase()}`;
     }
@@ -489,10 +492,13 @@ apiV1Router.post('/payments/create-payment-link', async (req: Request, res: Resp
   } catch (error: any) {
     const tier = req.body?.tier || 'PRO';
     const billingCycle = req.body?.billingCycle || 'ANNUAL';
+    const upperTier = String(tier).toUpperCase();
     // Fallback gracefully without 500 error
     return res.json({
       success: true,
-      paymentLink: String(tier).toUpperCase() === 'PRO'
+      paymentLink: upperTier === 'PRO'
+        ? 'https://rzp.io/rzp/ABsSSLW'
+        : upperTier === 'INSTITUTIONAL' || upperTier === 'ELITE'
         ? 'https://rzp.io/rzp/EIkNygc'
         : `https://rzp.io/l/tradeos-${String(tier).toLowerCase()}-${String(billingCycle).toLowerCase()}`,
       paymentLinkId: `link_${Date.now()}`,

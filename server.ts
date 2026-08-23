@@ -48,7 +48,10 @@ app.post('/api/create-payment-link', async (req: Request, res: Response) => {
     }
 
     // Return instant resilient payment link
-    const link = String(tier).toUpperCase() === 'PRO'
+    const upperTier = String(tier).toUpperCase();
+    const link = upperTier === 'PRO'
+      ? 'https://rzp.io/rzp/ABsSSLW'
+      : upperTier === 'INSTITUTIONAL' || upperTier === 'ELITE'
       ? 'https://rzp.io/rzp/EIkNygc'
       : `https://rzp.io/l/tradeos-${String(tier).toLowerCase()}-${String(billingCycle).toLowerCase()}`;
     res.json({
@@ -60,9 +63,12 @@ app.post('/api/create-payment-link', async (req: Request, res: Response) => {
       keyId: process.env.RAZORPAY_KEY_ID || 'rzp_test_tradeos_sandbox',
     });
   } catch (err: any) {
+    const fallbackTier = String(req.body?.tier || '').toUpperCase();
     res.json({
       success: true,
-      paymentLink: 'https://rzp.io/rzp/EIkNygc',
+      paymentLink: fallbackTier === 'INSTITUTIONAL' || fallbackTier === 'ELITE'
+        ? 'https://rzp.io/rzp/EIkNygc'
+        : 'https://rzp.io/rzp/ABsSSLW',
       paymentLinkId: `link_${Date.now()}`,
       currency: 'INR',
     });

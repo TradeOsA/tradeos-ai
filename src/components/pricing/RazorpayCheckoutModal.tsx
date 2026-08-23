@@ -121,8 +121,12 @@ export const RazorpayCheckoutModal: React.FC<RazorpayCheckoutModalProps> = ({
     } catch (e) {
       console.warn('Could not create payment link:', e);
     }
-    const defaultProLink = 'https://rzp.io/rzp/EIkNygc';
-    return paymentLink || (tier === 'PRO' ? defaultProLink : `https://rzp.io/l/tradeos-${tier.toLowerCase()}-${billingCycle.toLowerCase()}`);
+    const defaultProLink = 'https://rzp.io/rzp/ABsSSLW';
+    const defaultEliteLink = 'https://rzp.io/rzp/EIkNygc';
+    if (paymentLink) return paymentLink;
+    if (tier === 'PRO') return defaultProLink;
+    if (tier === 'INSTITUTIONAL') return defaultEliteLink;
+    return `https://rzp.io/l/tradeos-${String(tier).toLowerCase()}-${billingCycle.toLowerCase()}`;
   };
 
   // 1-Click Launch Standalone Checkout in New Tab (Bypasses all iframe restrictions)
