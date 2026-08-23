@@ -517,26 +517,42 @@ export const PaperTradingView: React.FC<PaperTradingViewProps> = ({
 
     // 2. Realtime listener from Firestore
     try {
-      const unsubConfig = onSnapshot(doc(db, 'system_state', 'autotrade_config'), (snap) => {
-        if (snap.exists()) {
-          const cloudConfig = snap.data() as AutoTradeConfig;
-          setAutoTradeConfig((prev) => {
-            const maxPos = cloudConfig.maxOpenPositions && cloudConfig.maxOpenPositions >= 5 ? cloudConfig.maxOpenPositions : (prev.maxOpenPositions || 15);
-            return { ...prev, ...cloudConfig, maxOpenPositions: maxPos };
-          });
-        }
-      });
-      const unsubLogs = onSnapshot(doc(db, 'system_state', 'autotrade_logs'), (snap) => {
-        if (snap.exists()) {
-          const cloudData = snap.data();
-          if (cloudData && Array.isArray(cloudData.logs) && cloudData.logs.length > 0) {
-            setAutoTradeLogs(cloudData.logs);
+      const unsubConfig = onSnapshot(
+        doc(db, 'system_state', 'autotrade_config'),
+        (snap) => {
+          if (snap.exists()) {
+            const cloudConfig = snap.data() as AutoTradeConfig;
+            setAutoTradeConfig((prev) => {
+              const maxPos = cloudConfig.maxOpenPositions && cloudConfig.maxOpenPositions >= 5 ? cloudConfig.maxOpenPositions : (prev.maxOpenPositions || 15);
+              return { ...prev, ...cloudConfig, maxOpenPositions: maxPos };
+            });
           }
+        },
+        (err) => {
+          console.warn('[PaperTrading] autotrade_config snapshot info:', err?.message || err);
         }
-      });
+      );
+      const unsubLogs = onSnapshot(
+        doc(db, 'system_state', 'autotrade_logs'),
+        (snap) => {
+          if (snap.exists()) {
+            const cloudData = snap.data();
+            if (cloudData && Array.isArray(cloudData.logs) && cloudData.logs.length > 0) {
+              setAutoTradeLogs(cloudData.logs);
+            }
+          }
+        },
+        (err) => {
+          console.warn('[PaperTrading] autotrade_logs snapshot info:', err?.message || err);
+        }
+      );
       return () => {
-        unsubConfig();
-        unsubLogs();
+        try {
+          unsubConfig();
+        } catch {}
+        try {
+          unsubLogs();
+        } catch {}
       };
     } catch {}
   }, []);
@@ -732,45 +748,55 @@ export const PaperTradingView: React.FC<PaperTradingViewProps> = ({
 
     // 2. Realtime listener from Firestore system_state
     try {
-      const unsub = onSnapshot(doc(db, 'system_state', 'live_paper_account'), (snapshot) => {
-        if (snapshot.exists()) {
-          const cloudState = snapshot.data() as Partial<PaperTradingAccount>;
-          if (cloudState && Array.isArray(cloudState.positions)) {
-            setAccount((prev) => {
-              const cloudPositions = cloudState.positions || [];
-              const currIds = new Set(prev.positions.map((p) => p.id));
-              const merged = [
-                ...prev.positions,
-                ...cloudPositions.filter((p) => !currIds.has(p.id)),
-              ];
-              const cloudHistory = Array.isArray(cloudState.history) ? cloudState.history : [];
-              const localSaved = localStorage.getItem(STORAGE_KEY);
-              let finalHistory = prev.history;
-              if (localSaved) {
-                try {
-                  const parsed = JSON.parse(localSaved);
-                  if (Array.isArray(parsed.history) && parsed.history.length === 0 && cloudHistory.length === 0) {
-                    finalHistory = [];
-                  }
-                } catch {}
-              }
-              const calculatedRealized = Number(finalHistory.reduce((sum, h) => sum + (Number(h.realizedPnL) || 0), 0).toFixed(2));
-              const initBal = prev.initialBalance || 10000;
-              const newBal = Number((initBal + calculatedRealized).toFixed(2));
+      const unsub = onSnapshot(
+        doc(db, 'system_state', 'live_paper_account'),
+        (snapshot) => {
+          if (snapshot.exists()) {
+            const cloudState = snapshot.data() as Partial<PaperTradingAccount>;
+            if (cloudState && Array.isArray(cloudState.positions)) {
+              setAccount((prev) => {
+                const cloudPositions = cloudState.positions || [];
+                const currIds = new Set(prev.positions.map((p) => p.id));
+                const merged = [
+                  ...prev.positions,
+                  ...cloudPositions.filter((p) => !currIds.has(p.id)),
+                ];
+                const cloudHistory = Array.isArray(cloudState.history) ? cloudState.history : [];
+                const localSaved = localStorage.getItem(STORAGE_KEY);
+                let finalHistory = prev.history;
+                if (localSaved) {
+                  try {
+                    const parsed = JSON.parse(localSaved);
+                    if (Array.isArray(parsed.history) && parsed.history.length === 0 && cloudHistory.length === 0) {
+                      finalHistory = [];
+                    }
+                  } catch {}
+                }
+                const calculatedRealized = Number(finalHistory.reduce((sum, h) => sum + (Number(h.realizedPnL) || 0), 0).toFixed(2));
+                const initBal = prev.initialBalance || 10000;
+                const newBal = Number((initBal + calculatedRealized).toFixed(2));
 
-              return {
-                ...prev,
-                balance: newBal,
-                realizedPnL: calculatedRealized,
-                positions: merged.length > 0 ? merged : prev.positions,
-                pendingOrders: cloudState.pendingOrders ?? prev.pendingOrders,
-                history: finalHistory,
-              };
-            });
+                return {
+                  ...prev,
+                  balance: newBal,
+                  realizedPnL: calculatedRealized,
+                  positions: merged.length > 0 ? merged : prev.positions,
+                  pendingOrders: cloudState.pendingOrders ?? prev.pendingOrders,
+                  history: finalHistory,
+                };
+              });
+            }
           }
+        },
+        (err) => {
+          console.warn('[PaperTrading] live_paper_account snapshot info:', err?.message || err);
         }
-      });
-      return () => unsub();
+      );
+      return () => {
+        try {
+          unsub();
+        } catch {}
+      };
     } catch (err) {
       console.warn('[PaperTrading] Firestore listener initialization:', err);
     }

@@ -9,23 +9,38 @@ import {
 } from 'firebase/auth';
 import {
   getFirestore,
+  initializeFirestore,
+  memoryLocalCache,
   doc,
   setDoc,
   getDoc,
+  getDocs,
   collection,
   onSnapshot,
   query,
   orderBy,
   deleteDoc,
+  getDocFromServer,
 } from 'firebase/firestore';
 import firebaseConfig from '../../firebase-applet-config.json';
 
 // Initialize Firebase App
 const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
 
-// Auth & Firestore instances
+// Auth instance
 export const auth = getAuth(app);
-export const db = getFirestore(app, firebaseConfig.firestoreDatabaseId);
+
+// Initialize Firestore with memory-only cache to prevent browser IndexedDB "Database is closing/hidden" errors in sandboxed iframes
+let firestoreDb: ReturnType<typeof getFirestore>;
+try {
+  firestoreDb = initializeFirestore(app, {
+    localCache: memoryLocalCache(),
+  }, firebaseConfig.firestoreDatabaseId);
+} catch {
+  firestoreDb = getFirestore(app, firebaseConfig.firestoreDatabaseId);
+}
+
+export const db = firestoreDb;
 export const googleProvider = new GoogleAuthProvider();
 googleProvider.setCustomParameters({
   prompt: 'select_account',
@@ -38,11 +53,14 @@ export {
   doc,
   setDoc,
   getDoc,
+  getDocs,
   collection,
   onSnapshot,
   query,
   orderBy,
   deleteDoc,
+  getDocFromServer,
 };
 
 export type { FirebaseUser };
+

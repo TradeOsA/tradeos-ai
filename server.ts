@@ -48,7 +48,9 @@ app.post('/api/create-payment-link', async (req: Request, res: Response) => {
     }
 
     // Return instant resilient payment link
-    const link = `https://rzp.io/l/tradeos-${String(tier).toLowerCase()}-${String(billingCycle).toLowerCase()}`;
+    const link = String(tier).toUpperCase() === 'PRO'
+      ? 'https://rzp.io/rzp/EIkNygc'
+      : `https://rzp.io/l/tradeos-${String(tier).toLowerCase()}-${String(billingCycle).toLowerCase()}`;
     res.json({
       success: true,
       paymentLink: link,
@@ -60,7 +62,7 @@ app.post('/api/create-payment-link', async (req: Request, res: Response) => {
   } catch (err: any) {
     res.json({
       success: true,
-      paymentLink: 'https://rzp.io/l/tradeos-pro-annual',
+      paymentLink: 'https://rzp.io/rzp/EIkNygc',
       paymentLinkId: `link_${Date.now()}`,
       currency: 'INR',
     });

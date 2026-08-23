@@ -189,31 +189,42 @@ export default function App() {
 
     // 2. Listen to Firestore
     try {
-      const unsub = onSnapshot(doc(db, 'system_state', 'journal_trades'), (snap) => {
-        if (snap.exists()) {
-          const cloudData = snap.data();
-          if (cloudData && Array.isArray(cloudData.trades)) {
-            const localSaved = localStorage.getItem('tradeos_trades_v2');
-            if (localSaved !== null) {
-              try {
-                const parsedLocal = JSON.parse(localSaved);
-                if (Array.isArray(parsedLocal) && parsedLocal.length === 0 && cloudData.trades.length === 0) {
-                  setTrades([]);
-                  return;
-                }
-              } catch {}
-            }
-            if (cloudData.trades.length > 0) {
-              setTrades((prev) => {
-                const currentIds = new Set(prev.map((t) => t.id));
-                const merged = [...prev, ...cloudData.trades.filter((t: Trade) => !currentIds.has(t.id))];
-                return merged.length > 0 ? merged : prev;
-              });
+      const unsub = onSnapshot(
+        doc(db, 'system_state', 'journal_trades'),
+        (snap) => {
+          if (snap.exists()) {
+            const cloudData = snap.data();
+            if (cloudData && Array.isArray(cloudData.trades)) {
+              const localSaved = localStorage.getItem('tradeos_trades_v2');
+              if (localSaved !== null) {
+                try {
+                  const parsedLocal = JSON.parse(localSaved);
+                  if (Array.isArray(parsedLocal) && parsedLocal.length === 0 && cloudData.trades.length === 0) {
+                    setTrades([]);
+                    return;
+                  }
+                } catch {}
+              }
+              if (cloudData.trades.length > 0) {
+                setTrades((prev) => {
+                  const currentIds = new Set(prev.map((t) => t.id));
+                  const merged = [...prev, ...cloudData.trades.filter((t: Trade) => !currentIds.has(t.id))];
+                  return merged.length > 0 ? merged : prev;
+                });
+              }
             }
           }
+        },
+        (error) => {
+          // Graceful handler prevents unhandled exceptions during background/hidden/closing states
+          console.warn('[Firestore] Journal trades snapshot sync info:', error?.message || error);
         }
-      });
-      return () => unsub();
+      );
+      return () => {
+        try {
+          unsub();
+        } catch {}
+      };
     } catch (err) {
       console.warn('Firestore trades sync init:', err);
     }

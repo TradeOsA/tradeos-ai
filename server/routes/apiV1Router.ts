@@ -472,7 +472,9 @@ apiV1Router.post('/payments/create-payment-link', async (req: Request, res: Resp
 
     // Standard redirect fallback if no live API link could be minted
     if (!paymentLinkUrl) {
-      paymentLinkUrl = `https://rzp.io/l/tradeos-${tier.toLowerCase()}-${billingCycle.toLowerCase()}`;
+      paymentLinkUrl = String(tier).toUpperCase() === 'PRO'
+        ? 'https://rzp.io/rzp/EIkNygc'
+        : `https://rzp.io/l/tradeos-${tier.toLowerCase()}-${billingCycle.toLowerCase()}`;
     }
 
     return res.json({
@@ -490,7 +492,9 @@ apiV1Router.post('/payments/create-payment-link', async (req: Request, res: Resp
     // Fallback gracefully without 500 error
     return res.json({
       success: true,
-      paymentLink: `https://rzp.io/l/tradeos-${String(tier).toLowerCase()}-${String(billingCycle).toLowerCase()}`,
+      paymentLink: String(tier).toUpperCase() === 'PRO'
+        ? 'https://rzp.io/rzp/EIkNygc'
+        : `https://rzp.io/l/tradeos-${String(tier).toLowerCase()}-${String(billingCycle).toLowerCase()}`,
       paymentLinkId: `link_${Date.now()}`,
       currency: 'INR',
       amount: 1663,
