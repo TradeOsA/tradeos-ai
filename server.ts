@@ -49,26 +49,30 @@ app.post('/api/create-payment-link', async (req: Request, res: Response) => {
 
     // Return instant resilient payment link
     const upperTier = String(tier).toUpperCase();
-    const link = upperTier === 'PRO'
-      ? 'https://rzp.io/rzp/ABsSSLW'
-      : upperTier === 'INSTITUTIONAL' || upperTier === 'ELITE'
-      ? 'https://rzp.io/rzp/EIkNygc'
-      : `https://rzp.io/l/tradeos-${String(tier).toLowerCase()}-${String(billingCycle).toLowerCase()}`;
+    const isAnnual = String(billingCycle).toUpperCase() === 'ANNUAL' || String(billingCycle).toUpperCase() === 'YEARLY';
+    let link = `https://rzp.io/l/tradeos-${String(tier).toLowerCase()}-${String(billingCycle).toLowerCase()}`;
+    if (upperTier === 'PRO') {
+      link = isAnnual ? 'https://rzp.io/rzp/CExXriqX' : 'https://rzp.io/rzp/ABsSSLW';
+    } else if (upperTier === 'INSTITUTIONAL' || upperTier === 'ELITE') {
+      link = isAnnual ? 'https://rzp.io/rzp/t2CXAIE' : 'https://rzp.io/rzp/EIkNygc';
+    }
     res.json({
       success: true,
       paymentLink: link,
       paymentLinkId: `link_${Date.now()}`,
       currency: 'INR',
-      amount: Number(amount) || 1663,
+      amount: Number(amount) || (isAnnual ? (upperTier === 'PRO' ? 4788 : 14388) : (upperTier === 'PRO' ? 499 : 1499)),
       keyId: process.env.RAZORPAY_KEY_ID || 'rzp_test_tradeos_sandbox',
     });
   } catch (err: any) {
     const fallbackTier = String(req.body?.tier || '').toUpperCase();
+    const isAnnual = String(req.body?.billingCycle || '').toUpperCase() === 'ANNUAL' || String(req.body?.billingCycle || '').toUpperCase() === 'YEARLY';
+    const fallbackLink = (fallbackTier === 'INSTITUTIONAL' || fallbackTier === 'ELITE')
+      ? (isAnnual ? 'https://rzp.io/rzp/t2CXAIE' : 'https://rzp.io/rzp/EIkNygc')
+      : (isAnnual ? 'https://rzp.io/rzp/CExXriqX' : 'https://rzp.io/rzp/ABsSSLW');
     res.json({
       success: true,
-      paymentLink: fallbackTier === 'INSTITUTIONAL' || fallbackTier === 'ELITE'
-        ? 'https://rzp.io/rzp/EIkNygc'
-        : 'https://rzp.io/rzp/ABsSSLW',
+      paymentLink: fallbackLink,
       paymentLinkId: `link_${Date.now()}`,
       currency: 'INR',
     });

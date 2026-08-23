@@ -473,11 +473,14 @@ apiV1Router.post('/payments/create-payment-link', async (req: Request, res: Resp
     // Standard redirect fallback if no live API link could be minted
     if (!paymentLinkUrl) {
       const upperTier = String(tier).toUpperCase();
-      paymentLinkUrl = upperTier === 'PRO'
-        ? 'https://rzp.io/rzp/ABsSSLW'
-        : upperTier === 'INSTITUTIONAL' || upperTier === 'ELITE'
-        ? 'https://rzp.io/rzp/EIkNygc'
-        : `https://rzp.io/l/tradeos-${tier.toLowerCase()}-${billingCycle.toLowerCase()}`;
+      const isAnnual = String(billingCycle).toUpperCase() === 'ANNUAL' || String(billingCycle).toUpperCase() === 'YEARLY';
+      if (upperTier === 'PRO') {
+        paymentLinkUrl = isAnnual ? 'https://rzp.io/rzp/CExXriqX' : 'https://rzp.io/rzp/ABsSSLW';
+      } else if (upperTier === 'INSTITUTIONAL' || upperTier === 'ELITE') {
+        paymentLinkUrl = isAnnual ? 'https://rzp.io/rzp/t2CXAIE' : 'https://rzp.io/rzp/EIkNygc';
+      } else {
+        paymentLinkUrl = `https://rzp.io/l/tradeos-${tier.toLowerCase()}-${billingCycle.toLowerCase()}`;
+      }
     }
 
     return res.json({
@@ -493,14 +496,17 @@ apiV1Router.post('/payments/create-payment-link', async (req: Request, res: Resp
     const tier = req.body?.tier || 'PRO';
     const billingCycle = req.body?.billingCycle || 'ANNUAL';
     const upperTier = String(tier).toUpperCase();
+    const isAnnual = String(billingCycle).toUpperCase() === 'ANNUAL' || String(billingCycle).toUpperCase() === 'YEARLY';
+    let fallbackLink = `https://rzp.io/l/tradeos-${String(tier).toLowerCase()}-${String(billingCycle).toLowerCase()}`;
+    if (upperTier === 'PRO') {
+      fallbackLink = isAnnual ? 'https://rzp.io/rzp/CExXriqX' : 'https://rzp.io/rzp/ABsSSLW';
+    } else if (upperTier === 'INSTITUTIONAL' || upperTier === 'ELITE') {
+      fallbackLink = isAnnual ? 'https://rzp.io/rzp/t2CXAIE' : 'https://rzp.io/rzp/EIkNygc';
+    }
     // Fallback gracefully without 500 error
     return res.json({
       success: true,
-      paymentLink: upperTier === 'PRO'
-        ? 'https://rzp.io/rzp/ABsSSLW'
-        : upperTier === 'INSTITUTIONAL' || upperTier === 'ELITE'
-        ? 'https://rzp.io/rzp/EIkNygc'
-        : `https://rzp.io/l/tradeos-${String(tier).toLowerCase()}-${String(billingCycle).toLowerCase()}`,
+      paymentLink: fallbackLink,
       paymentLinkId: `link_${Date.now()}`,
       currency: 'INR',
       amount: 1663,

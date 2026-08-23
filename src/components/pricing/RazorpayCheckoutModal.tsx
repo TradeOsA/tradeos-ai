@@ -121,8 +121,9 @@ export const RazorpayCheckoutModal: React.FC<RazorpayCheckoutModalProps> = ({
     } catch (e) {
       console.warn('Could not create payment link:', e);
     }
-    const defaultProLink = 'https://rzp.io/rzp/ABsSSLW';
-    const defaultEliteLink = 'https://rzp.io/rzp/EIkNygc';
+    const isAnnual = String(billingCycle).toUpperCase() === 'ANNUAL' || String(billingCycle).toUpperCase() === 'YEARLY';
+    const defaultProLink = isAnnual ? 'https://rzp.io/rzp/CExXriqX' : 'https://rzp.io/rzp/ABsSSLW';
+    const defaultEliteLink = isAnnual ? 'https://rzp.io/rzp/t2CXAIE' : 'https://rzp.io/rzp/EIkNygc';
     if (paymentLink) return paymentLink;
     if (tier === 'PRO') return defaultProLink;
     if (tier === 'INSTITUTIONAL') return defaultEliteLink;
