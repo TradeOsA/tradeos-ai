@@ -1,0 +1,63 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "Trader profile and settings document",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "email": { "type": "string" },
+        "avatarUrl": { "type": "string" },
+        "experienceLevel": { "type": "string" },
+        "accountBalance": { "type": "number" },
+        "defaultRiskPercent": { "type": "number" },
+        "primaryMarkets": { "type": "array", "items": { "type": "string" } },
+        "createdAt": { "type": "string" },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["id", "name", "email"]
+    },
+    "Trade": {
+      "title": "Trade",
+      "description": "Trading journal record with risk and execution metrics",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "symbol": { "type": "string" },
+        "assetName": { "type": "string" },
+        "market": { "type": "string" },
+        "type": { "type": "string", "enum": ["LONG", "SHORT"] },
+        "entryPrice": { "type": "number" },
+        "exitPrice": { "type": "number" },
+        "stopLoss": { "type": "number" },
+        "takeProfit": { "type": "number" },
+        "size": { "type": "number" },
+        "status": { "type": "string", "enum": ["OPEN", "CLOSED", "CANCELLED"] },
+        "entryDate": { "type": "string" },
+        "exitDate": { "type": "string" },
+        "pnl": { "type": "number" },
+        "pnlPercentage": { "type": "number" },
+        "riskRewardRatio": { "type": "number" },
+        "setupStrategy": { "type": "string" },
+        "notes": { "type": "string" },
+        "tags": { "type": "array", "items": { "type": "string" } },
+        "disciplineScore": { "type": "number" },
+        "createdAt": { "type": "string" },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["id", "userId", "symbol", "type", "entryPrice", "stopLoss", "takeProfit", "size", "status", "entryDate"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "UserProfile",
+      "description": "User profile settings document keyed by user UID"
+    },
+    "/users/{userId}/trades/{tradeId}": {
+      "schema": "Trade",
+      "description": "Subcollection of journal trades belonging to the specific trader"
+    }
+  }
+}

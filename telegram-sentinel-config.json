@@ -1,0 +1,15 @@
+{
+  "isEnabled": true,
+  "botToken": "",
+  "chatId": "@TradeosAi_Signals",
+  "channelUsername": "@TradeosAi_Signals",
+  "alertOnBreakout": true,
+  "alertOnRiskDrawdown": true,
+  "alertOnMacroNews": true,
+  "minConfidenceScore": 85,
+  "antiFakeoutFilter": true,
+  "autoSendBreakouts": true,
+  "minPriceJumpUsd": 400,
+  "minChangePct": 0.8,
+  "lastSavedAt": "2026-08-21T12:00:00.000Z"
+}

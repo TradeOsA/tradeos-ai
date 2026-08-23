@@ -1,0 +1,27 @@
+{
+  "isEnabled": true,
+  "executionMode": "SMART_SMC",
+  "minConfidenceScore": 95,
+  "minRiskReward": 2,
+  "allowedGrades": [
+    "A+",
+    "A"
+  ],
+  "maxOpenPositions": 15,
+  "sizingMode": "FIXED_MARGIN",
+  "fixedMarginAmount": 100,
+  "riskPercentBalance": 2,
+  "defaultLeverage": 10,
+  "autoMoveSlToBreakeven": true,
+  "enableTrailingStop": false,
+  "trailingDistancePercent": 1.5,
+  "soundAlertOnExecution": true,
+  "targetCategories": [
+    "Crypto",
+    "Forex",
+    "Stocks",
+    "Commodities"
+  ],
+  "cooldownMinutesPerAsset": 10,
+  "antiFakeoutStrict": true
+}

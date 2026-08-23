@@ -1,0 +1,8 @@
+{
+  "name": "TradeOS AI",
+  "description": "Production-ready AI-powered trading workspace with risk management, trade journaling, AI chart review, AI trading coach, learning academy, and market analytics.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

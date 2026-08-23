@@ -1,0 +1,51 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Helper function to check if the caller is authenticated
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    // Helper to check if caller is the owner of the document
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    // User profile matching rules
+    match /users/{userId} {
+      allow read, write: if true;
+
+      // Subcollection for user's private trades
+      match /trades/{tradeId} {
+        allow read, write: if true;
+      }
+
+      // Subcollection for user's paper trading state & auto trader
+      match /paper_account/{docId} {
+        allow read, write: if true;
+      }
+    }
+
+    // Global persistence collections for seamless multi-remix and terminal continuity
+    match /paper_accounts/{accountId} {
+      allow read, write: if true;
+    }
+
+    match /system_state/{docId} {
+      allow read, write: if true;
+    }
+
+    match /trades/{tradeId} {
+      allow read, write: if true;
+    }
+
+    match /alerts/{alertId} {
+      allow read, write: if true;
+    }
+
+    match /auto_trade_logs/{logId} {
+      allow read, write: if true;
+    }
+  }
+}
+
