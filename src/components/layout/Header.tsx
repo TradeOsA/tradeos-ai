@@ -75,7 +75,7 @@ export const Header: React.FC<HeaderProps> = ({
   const [showBalance, setShowBalance] = useState(true);
 
   return (
-    <header className="sticky top-0 z-40 border-b border-[#1C263C] bg-[#0A0E17]/95 transition-colors backdrop-blur-none">
+    <header className="sticky top-0 z-40 border-b border-[#1F2937] bg-[#090D16]/95 transition-colors backdrop-blur-none">
       <div className="w-full max-w-[1920px] mx-auto px-3 sm:px-6 h-16 flex items-center justify-between gap-2 sm:gap-4">
         {/* Left: Mobile Title, Fast Back & Home Quick Action, Discipline Indicator */}
         <div className="flex items-center gap-2 sm:gap-3 shrink-0">
@@ -83,29 +83,29 @@ export const Header: React.FC<HeaderProps> = ({
             onClick={() => setActiveTab('dashboard')}
             className="lg:hidden flex items-center gap-2.5 cursor-pointer group"
           >
-            <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-emerald-400 via-teal-400 to-indigo-500 flex items-center justify-center font-black text-slate-950 shadow-md">
+            <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center font-bold text-white shadow-sm">
               T
             </div>
-            <span className="font-black tracking-tight text-white text-base">{APP_CONFIG.shortName}</span>
+            <span className="font-bold tracking-tight text-white text-base">{APP_CONFIG.shortName}</span>
           </div>
 
           {/* Quick Back & Home (Universal Header Shortcuts) */}
-          <div className="hidden sm:flex items-center gap-1 bg-[#101626] p-1 rounded-xl border border-[#1C263C]">
+          <div className="hidden sm:flex items-center gap-1 bg-[#111827] p-1 rounded-lg border border-[#1F2937]">
             {activeTab !== 'dashboard' && onBack && (
               <button
                 onClick={onBack}
-                className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg hover:bg-white/10 text-slate-300 hover:text-white transition-all cursor-pointer group active:scale-95 text-xs font-semibold"
+                className="flex items-center gap-1 px-2.5 py-1.5 rounded-md hover:bg-white/10 text-slate-300 hover:text-white transition-all cursor-pointer group active:scale-95 text-xs font-semibold"
                 title="Go back to previous page"
               >
-                <ArrowLeft className="w-3.5 h-3.5 text-emerald-400 group-hover:-translate-x-0.5 transition-transform" />
+                <ArrowLeft className="w-3.5 h-3.5 text-blue-400 group-hover:-translate-x-0.5 transition-transform" />
                 <span className="hidden md:inline">Back</span>
               </button>
             )}
             <button
               onClick={() => setActiveTab('dashboard')}
-              className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
+              className={`p-1.5 rounded-md transition-colors cursor-pointer ${
                 activeTab === 'dashboard'
-                  ? 'bg-emerald-500/20 text-emerald-400 font-bold'
+                  ? 'bg-blue-500/20 text-blue-400 font-bold'
                   : 'hover:bg-white/10 text-slate-400 hover:text-white'
               }`}
               title="Jump to Live Terminal (Home)"
@@ -115,14 +115,14 @@ export const Header: React.FC<HeaderProps> = ({
           </div>
 
           {/* Real-time Network Latency & Live Status */}
-          <div className="hidden xl:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-[#101626] border border-[#1C263C] text-[11px] text-slate-300">
-            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+          <div className="hidden xl:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[#111827] border border-[#1F2937] text-[11px] text-slate-300">
+            <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
             <span className="font-mono font-bold text-emerald-400">12ms</span>
             <span className="text-slate-500">• Ultra-Low Latency</span>
           </div>
 
           {/* Institutional Balance Widget with Privacy Toggle */}
-          <div className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-[#101626] border border-[#1C263C] text-xs">
+          <div className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[#111827] border border-[#1F2937] text-xs">
             <span className="text-slate-400 text-[11px]">Capital:</span>
             <span className="font-mono font-bold text-slate-100">
               {showBalance ? formatCurrency(user.accountBalance || 50000) : '••••••'}
@@ -137,7 +137,7 @@ export const Header: React.FC<HeaderProps> = ({
           </div>
 
           {/* Discipline Score Indicator */}
-          <div className="hidden lg:flex items-center gap-2 text-xs bg-[#101626] border border-[#1C263C] rounded-xl px-3 py-1.5 text-slate-300">
+          <div className="hidden lg:flex items-center gap-2 text-xs bg-[#111827] border border-[#1F2937] rounded-lg px-3 py-1.5 text-slate-300">
             <ShieldCheck className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
             <span className="text-slate-400 text-[11px]">Discipline:</span>
             <span className="font-bold text-emerald-400 mono-numbers text-xs">{disciplineScore}%</span>
@@ -148,12 +148,12 @@ export const Header: React.FC<HeaderProps> = ({
         <div className="flex-1 max-w-2xl mx-2 sm:mx-4 flex items-center gap-2">
           {/* Market Switcher Quick Tabs (Desktop) */}
           {onSelectMarketSegment && (
-            <div className="hidden xl:flex items-center gap-1 bg-[#101626] p-1 rounded-xl border border-[#1C263C] shrink-0 text-xs">
+            <div className="hidden xl:flex items-center gap-1 bg-[#111827] p-1 rounded-lg border border-[#1F2937] shrink-0 text-xs">
               <button
                 onClick={() => onSelectMarketSegment('ALL')}
-                className={`px-2.5 py-1 rounded-lg font-bold transition-all cursor-pointer ${
+                className={`px-2.5 py-1 rounded-md font-bold transition-all cursor-pointer ${
                   selectedMarketSegment === 'ALL'
-                    ? 'bg-white/10 text-white shadow-sm'
+                    ? 'bg-blue-600 text-white shadow-sm'
                     : 'text-slate-400 hover:text-slate-200'
                 }`}
               >
@@ -161,9 +161,9 @@ export const Header: React.FC<HeaderProps> = ({
               </button>
               <button
                 onClick={() => onSelectMarketSegment('INDIAN')}
-                className={`flex items-center gap-1 px-2.5 py-1 rounded-lg font-bold transition-all cursor-pointer ${
+                className={`flex items-center gap-1 px-2.5 py-1 rounded-md font-bold transition-all cursor-pointer ${
                   selectedMarketSegment === 'INDIAN'
-                    ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40 shadow-sm'
+                    ? 'bg-blue-600 text-white shadow-sm'
                     : 'text-slate-400 hover:text-slate-200'
                 }`}
                 title="Indian Stock Market (NSE / BSE / NIFTY / BANKNIFTY)"
@@ -173,42 +173,40 @@ export const Header: React.FC<HeaderProps> = ({
               </button>
               <button
                 onClick={() => onSelectMarketSegment('CRYPTO')}
-                className={`flex items-center gap-1 px-2.5 py-1 rounded-lg font-bold transition-all cursor-pointer ${
+                className={`flex items-center gap-1 px-2.5 py-1 rounded-md font-bold transition-all cursor-pointer ${
                   selectedMarketSegment === 'CRYPTO'
-                    ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 shadow-sm'
+                    ? 'bg-blue-600 text-white shadow-sm'
                     : 'text-slate-400 hover:text-slate-200'
                 }`}
                 title="24x7 Crypto Market (BTC, ETH, SOL, Binance, Delta)"
               >
-                <span>⚡</span>
-                <span>Crypto (24x7)</span>
+                <span>Crypto</span>
               </button>
               <button
                 onClick={() => onSelectMarketSegment('FOREX')}
-                className={`flex items-center gap-1 px-2.5 py-1 rounded-lg font-bold transition-all cursor-pointer ${
+                className={`flex items-center gap-1 px-2.5 py-1 rounded-md font-bold transition-all cursor-pointer ${
                   selectedMarketSegment === 'FOREX'
-                    ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 shadow-sm'
+                    ? 'bg-blue-600 text-white shadow-sm'
                     : 'text-slate-400 hover:text-slate-200'
                 }`}
                 title="Forex & Commodities (EUR/USD, GBP/USD, XAU/USD Gold)"
               >
-                <span>🌍</span>
-                <span>Forex (MT4/MT5)</span>
+                <span>Forex</span>
               </button>
             </div>
           )}
 
           <button
             onClick={onOpenCommandPalette}
-            className="flex-1 flex items-center justify-between px-3.5 py-2 rounded-xl bg-[#101626] hover:bg-[#151D30] border border-[#1C263C] hover:border-[#283654] transition-all text-xs text-slate-300 cursor-pointer shadow-sm group"
+            className="flex-1 flex items-center justify-between px-3.5 py-2 rounded-lg bg-[#111827] hover:bg-[#161F30] border border-[#1F2937] hover:border-[#374151] transition-all text-xs text-slate-300 cursor-pointer shadow-sm group"
           >
             <div className="flex items-center gap-2.5 overflow-hidden">
-              <Search className="w-3.5 h-3.5 text-slate-400 group-hover:text-emerald-400 transition-colors shrink-0" />
+              <Search className="w-3.5 h-3.5 text-slate-400 group-hover:text-blue-400 transition-colors shrink-0" />
               <span className="hidden md:inline truncate text-slate-400">Search assets, strategies, calculators, jump anywhere...</span>
               <span className="md:hidden truncate text-slate-400">Search or ⌘K...</span>
             </div>
             <div className="flex items-center gap-1 shrink-0">
-              <kbd className="px-1.5 py-0.5 rounded-md bg-[#080B11] border border-[#1C263C] text-[10px] font-mono text-slate-400">
+              <kbd className="px-1.5 py-0.5 rounded bg-[#0D1320] border border-[#1F2937] text-[10px] font-mono text-slate-400">
                 ⌘K
               </kbd>
             </div>
@@ -217,46 +215,15 @@ export const Header: React.FC<HeaderProps> = ({
 
         {/* Right Controls */}
         <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
-          {/* Emergency Kill Switch Trigger */}
-          {onOpenKillSwitch && (
-            <button
-              onClick={onOpenKillSwitch}
-              className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl bg-rose-500/15 hover:bg-rose-500/25 border border-rose-500/40 hover:border-rose-500/60 text-rose-300 hover:text-rose-100 font-black text-xs transition-all cursor-pointer shadow-sm active:scale-95 group shrink-0"
-              title="EMERGENCY KILL SWITCH: Cancel All Orders & Square Off Positions Instantly"
-            >
-              <Flame className="w-3.5 h-3.5 text-rose-400 group-hover:animate-ping" />
-              <span className="hidden sm:inline">KILL SWITCH</span>
-              <span className="sm:hidden text-[10px]">KILL</span>
-            </button>
-          )}
-
           {/* Broker API Key Setup Button */}
           {onOpenBrokerSync && (
             <button
               onClick={onOpenBrokerSync}
-              className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 hover:border-emerald-500/50 text-emerald-300 hover:text-emerald-200 font-bold text-xs transition-all cursor-pointer shadow-sm active:scale-95 group shrink-0"
-              title="Configure Exchange & Broker API Keys (Delta Exchange, Dhan, Zerodha, Angel One, MT4/MT5)"
+              className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg bg-[#111827] hover:bg-[#161F30] border border-[#1F2937] hover:border-[#374151] text-slate-200 hover:text-white font-semibold text-xs transition-all cursor-pointer shadow-sm active:scale-95 group shrink-0"
+              title="Configure Exchange & Broker API Keys"
             >
-              <Key className="w-3.5 h-3.5 text-emerald-400 group-hover:rotate-12 transition-transform" />
-              <span className="hidden sm:inline">API Key & Brokers</span>
-              <span className="sm:hidden text-[11px]">API Keys</span>
-            </button>
-          )}
-
-          {/* About / Founder Button */}
-          {onOpenAbout && (
-            <button
-              onClick={onOpenAbout}
-              className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl border text-xs font-bold transition-all cursor-pointer shadow-sm active:scale-95 group shrink-0 ${
-                activeTab === 'about'
-                  ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/50 shadow-emerald-500/10'
-                  : 'bg-white/[0.04] hover:bg-white/[0.08] border-white/10 text-slate-300 hover:text-white'
-              }`}
-              title="About TradeosAi & Founder Story"
-            >
-              <Sparkles className="w-3.5 h-3.5 text-emerald-400 group-hover:rotate-12 transition-transform" />
-              <span className="hidden sm:inline">About Us</span>
-              <span className="sm:hidden text-[11px]">About</span>
+              <Key className="w-3.5 h-3.5 text-blue-400" />
+              <span className="hidden sm:inline">API Keys</span>
             </button>
           )}
 
@@ -264,12 +231,11 @@ export const Header: React.FC<HeaderProps> = ({
           {onOpenPricing && (
             <button
               onClick={onOpenPricing}
-              className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 text-slate-200 hover:text-white font-medium text-xs transition-all cursor-pointer shadow-sm active:scale-95 group shrink-0"
+              className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg bg-[#111827] hover:bg-[#161F30] border border-[#1F2937] hover:border-[#374151] text-slate-200 hover:text-white font-semibold text-xs transition-all cursor-pointer shadow-sm active:scale-95 group shrink-0"
               title="View Plans & Pricing"
             >
               <CreditCard className="w-3.5 h-3.5 text-slate-400 group-hover:text-white transition-colors" />
-              <span className="hidden sm:inline">Pricing</span>
-              <span className="sm:hidden text-[11px]">VIP</span>
+              <span>Pricing</span>
             </button>
           )}
 
@@ -277,7 +243,7 @@ export const Header: React.FC<HeaderProps> = ({
           <div className="relative">
             <button
               onClick={() => setIsCurrencyDropdownOpen(!isCurrencyDropdownOpen)}
-              className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-[#101626] hover:bg-[#151D30] border border-[#1C263C] text-xs font-mono font-bold text-slate-300 transition-colors cursor-pointer"
+              className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-[#111827] hover:bg-[#161F30] border border-[#1F2937] text-xs font-mono font-bold text-slate-300 transition-colors cursor-pointer"
               title="Change Display Currency"
             >
               <span>{CURRENCIES[currency].flag}</span>
@@ -286,7 +252,7 @@ export const Header: React.FC<HeaderProps> = ({
             </button>
 
             {isCurrencyDropdownOpen && (
-              <div className="absolute right-0 top-full mt-2 w-36 py-1.5 rounded-xl bg-[#0E131F] border border-[#1C263C] shadow-2xl z-50 animate-fade-in">
+              <div className="absolute right-0 top-full mt-2 w-36 py-1.5 rounded-lg bg-[#111827] border border-[#1F2937] shadow-xl z-50 animate-fade-in">
                 {(['USD', 'INR', 'EUR', 'GBP', 'AED'] as CurrencyCode[]).map((c) => (
                   <button
                     key={c}
@@ -296,7 +262,7 @@ export const Header: React.FC<HeaderProps> = ({
                     }}
                     className={`w-full flex items-center justify-between px-3 py-1.5 text-xs text-left transition-colors cursor-pointer ${
                       currency === c
-                        ? 'bg-emerald-500/20 text-emerald-400 font-bold'
+                        ? 'bg-blue-600/20 text-blue-400 font-bold'
                         : 'text-slate-300 hover:bg-white/5 hover:text-white'
                     }`}
                   >
@@ -314,17 +280,17 @@ export const Header: React.FC<HeaderProps> = ({
           {/* AI Copilot Drawer Trigger */}
           <button
             onClick={onOpenAIAssistant}
-            className="hidden sm:flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-xl bg-gradient-to-r from-indigo-500/15 via-purple-500/15 to-emerald-500/10 hover:from-indigo-500/25 hover:to-emerald-500/20 text-indigo-300 border border-indigo-500/30 transition-all cursor-pointer shadow-sm group"
+            className="hidden sm:flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg bg-blue-600/10 hover:bg-blue-600/20 text-blue-400 border border-blue-500/30 transition-all cursor-pointer shadow-sm group"
             title="Open AI Copilot Drawer"
           >
-            <Sparkles className="w-3.5 h-3.5 text-indigo-400 group-hover:rotate-12 transition-transform" />
+            <Sparkles className="w-3.5 h-3.5 text-blue-400" />
             <span className="hidden lg:inline">AI Copilot</span>
           </button>
 
           {/* Quick Log Trade */}
           <button
             onClick={onOpenNewTrade}
-            className="flex items-center gap-1.5 text-xs font-black px-3.5 py-1.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 shadow-md shadow-emerald-500/20 hover:shadow-emerald-500/30 transition-all cursor-pointer active:scale-95 shrink-0"
+            className="flex items-center gap-1.5 text-xs font-bold px-3.5 py-1.5 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-slate-950 shadow-sm transition-all cursor-pointer active:scale-95 shrink-0"
           >
             <PlusCircle className="w-4 h-4" />
             <span className="hidden sm:inline">Log Trade</span>
@@ -334,14 +300,14 @@ export const Header: React.FC<HeaderProps> = ({
           {/* Theme Mode Switcher */}
           <button
             onClick={toggleTheme}
-            className="p-1.5 rounded-xl text-slate-400 hover:text-white hover:bg-white/5 border border-transparent hover:border-white/10 transition-colors cursor-pointer"
+            className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-white/5 border border-transparent hover:border-[#1F2937] transition-colors cursor-pointer"
             title={theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
             aria-label="Toggle Theme"
           >
             {theme === 'dark' ? (
               <Sun className="w-4 h-4 text-amber-400" />
             ) : (
-              <Moon className="w-4 h-4 text-indigo-400" />
+              <Moon className="w-4 h-4 text-blue-400" />
             )}
           </button>
 
@@ -349,37 +315,37 @@ export const Header: React.FC<HeaderProps> = ({
           {onOpenSupport && (
             <button
               onClick={onOpenSupport}
-              className="p-1.5 rounded-xl text-slate-400 hover:text-white hover:bg-white/5 border border-transparent hover:border-white/10 transition-colors cursor-pointer"
+              className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-white/5 border border-transparent hover:border-[#1F2937] transition-colors cursor-pointer"
               title="Support Desk"
               aria-label="Support Desk"
             >
-              <HelpCircle className="w-4 h-4 text-emerald-400" />
+              <HelpCircle className="w-4 h-4 text-slate-400 hover:text-blue-400" />
             </button>
           )}
 
           {/* Notifications Trigger */}
           <button
             onClick={onOpenNotifications}
-            className="relative p-1.5 rounded-xl text-slate-400 hover:text-white hover:bg-white/5 border border-transparent hover:border-white/10 transition-colors cursor-pointer"
+            className="relative p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-white/5 border border-transparent hover:border-[#1F2937] transition-colors cursor-pointer"
             title="Open Notifications Center"
             aria-label="Notifications"
           >
             <Bell className="w-4 h-4" />
-            <span className="absolute top-1 right-1 w-2 h-2 bg-emerald-400 rounded-full" />
+            <span className="absolute top-1 right-1 w-2 h-2 bg-blue-400 rounded-full" />
           </button>
 
           {/* Direct Login / Google Auth Button */}
           {!user.email ? (
             <button
               onClick={onOpenAuth}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-emerald-500/20 to-indigo-500/20 hover:from-emerald-500/30 hover:to-indigo-500/30 border border-emerald-500/40 text-emerald-300 hover:text-white font-bold text-xs transition-all cursor-pointer shadow-sm active:scale-95 group shrink-0"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs transition-all cursor-pointer shadow-sm active:scale-95 group shrink-0"
               title="Log in"
             >
-              <span className="font-black">Login</span>
+              <span>Login</span>
             </button>
           ) : (
-            <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-bold shrink-0">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+            <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-[#111827] border border-[#1F2937] text-emerald-400 text-xs font-semibold shrink-0">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
               <span className="hidden md:inline">Sync Active</span>
             </div>
           )}
@@ -387,16 +353,16 @@ export const Header: React.FC<HeaderProps> = ({
           {/* User Profile Pill */}
           <button
             onClick={user.email ? onOpenProfileSettings : onOpenAuth}
-            className="flex items-center gap-2 pl-1 pr-2 py-1 rounded-xl bg-[#101626] hover:bg-[#151D30] border border-[#1C263C] transition-all cursor-pointer group"
+            className="flex items-center gap-2 pl-1 pr-2 py-1 rounded-lg bg-[#111827] hover:bg-[#161F30] border border-[#1F2937] transition-all cursor-pointer group"
             title={user.email ? 'Profile & Risk Settings' : 'Log In / Create Account'}
           >
             <img
               src={user.avatarUrl}
               alt={user.name}
-              className="w-6 h-6 rounded-lg object-cover ring-1 ring-emerald-500/40 group-hover:ring-emerald-400 transition-all"
+              className="w-6 h-6 rounded-md object-cover ring-1 ring-[#1F2937] group-hover:ring-blue-500 transition-all"
             />
             <div className="hidden xl:flex flex-col text-left">
-              <span className="text-xs font-bold text-slate-200 leading-tight group-hover:text-white transition-colors truncate max-w-[90px]">
+              <span className="text-xs font-semibold text-slate-200 leading-tight group-hover:text-white transition-colors truncate max-w-[90px]">
                 {user.name}
               </span>
             </div>

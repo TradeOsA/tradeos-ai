@@ -1,4 +1,5 @@
 import React from 'react';
+import { useCurrency } from '../../context/CurrencyContext';
 import { AdvancedTradingChart } from './AdvancedTradingChart';
 import { WatchlistWidget } from './WatchlistWidget';
 import { MarketHeatmapWidget } from './MarketHeatmapWidget';
@@ -82,6 +83,8 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   onSelectMarketSegment,
   onBack,
 }) => {
+  const { formatCurrency } = useCurrency();
+
   // Filter assets based on active market segment
   const filteredAssets = React.useMemo(() => {
     if (selectedMarketSegment === 'INDIAN') {
@@ -280,7 +283,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                     : 'text-rose-400'
                 }`}
               >
-                {trades.length === 0 ? '$0.00' : `${netPnL >= 0 ? '+' : ''}$${netPnL.toLocaleString()}`}
+                {trades.length === 0 ? formatCurrency(0) : formatCurrency(netPnL, { showPlusSign: true })}
               </span>
             </div>
           </div>

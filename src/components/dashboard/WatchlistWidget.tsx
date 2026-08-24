@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Star, TrendingUp, TrendingDown, Eye } from 'lucide-react';
 import { MarketAsset } from '../../types';
+import { formatAssetPrice } from '../../utils/currencyUtils';
 
 interface WatchlistWidgetProps {
   assets: MarketAsset[];
@@ -115,10 +116,7 @@ export const WatchlistWidget: React.FC<WatchlistWidgetProps> = ({
               {/* Price & Change */}
               <div className="text-right">
                 <div className="font-bold text-white text-xs mono-numbers font-mono">
-                  ${asset.price.toLocaleString(undefined, {
-                    minimumFractionDigits: asset.price < 10 ? 4 : 2,
-                    maximumFractionDigits: asset.price < 10 ? 4 : 2,
-                  })}
+                  {formatAssetPrice(asset.price, asset)}
                 </div>
                 <div
                   className={`text-[10px] font-bold font-mono inline-flex items-center gap-0.5 ${

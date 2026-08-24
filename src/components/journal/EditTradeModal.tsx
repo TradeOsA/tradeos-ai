@@ -16,6 +16,7 @@ import {
   Trash2,
 } from 'lucide-react';
 import { Trade, TradeDirection, TradeStatus, MarketCategory, TradingStrategy, EmotionBefore } from '../../types';
+import { getAssetCurrencySymbol } from '../../utils/currencyUtils';
 
 interface EditTradeModalProps {
   isOpen: boolean;
@@ -73,6 +74,8 @@ export const EditTradeModal: React.FC<EditTradeModalProps> = ({
   const [fees, setFees] = useState<number>(0);
   const [tagsInput, setTagsInput] = useState('');
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+
+  const currencySymbol = getAssetCurrencySymbol(symbol, market);
 
   // Sync state when trade changes
   useEffect(() => {
@@ -322,7 +325,7 @@ export const EditTradeModal: React.FC<EditTradeModalProps> = ({
               {/* Entry Price */}
               <div>
                 <label className="block text-[11px] font-bold text-slate-300 mb-1">
-                  Entry Price ($) <span className="text-rose-400">*</span>
+                  Entry Price ({currencySymbol}) <span className="text-rose-400">*</span>
                 </label>
                 <input
                   type="number"
@@ -338,7 +341,7 @@ export const EditTradeModal: React.FC<EditTradeModalProps> = ({
               {/* Exit Price */}
               <div>
                 <label className="block text-[11px] font-bold text-slate-300 mb-1">
-                  Exit Price ($)
+                  Exit Price ({currencySymbol})
                 </label>
                 <input
                   type="number"
@@ -356,7 +359,7 @@ export const EditTradeModal: React.FC<EditTradeModalProps> = ({
               {/* Stop Loss */}
               <div>
                 <label className="block text-[11px] font-bold text-rose-300 mb-1">
-                  Stop Loss ($)
+                  Stop Loss ({currencySymbol})
                 </label>
                 <input
                   type="number"
@@ -371,7 +374,7 @@ export const EditTradeModal: React.FC<EditTradeModalProps> = ({
               {/* Target Price */}
               <div>
                 <label className="block text-[11px] font-bold text-emerald-300 mb-1">
-                  Target Price ($)
+                  Target Price ({currencySymbol})
                 </label>
                 <input
                   type="number"
@@ -388,7 +391,7 @@ export const EditTradeModal: React.FC<EditTradeModalProps> = ({
             <div className="grid grid-cols-1 xs:grid-cols-3 gap-2.5 sm:gap-3 pt-1">
               <div>
                 <label className="block text-[11px] font-bold text-slate-300 mb-1">
-                  Position Size ($)
+                  Position Size ({currencySymbol})
                 </label>
                 <input
                   type="number"
@@ -416,7 +419,7 @@ export const EditTradeModal: React.FC<EditTradeModalProps> = ({
 
               <div>
                 <label className="block text-[11px] font-bold text-slate-300 mb-1">
-                  Trading Fees ($)
+                  Trading Fees ({currencySymbol})
                 </label>
                 <input
                   type="number"

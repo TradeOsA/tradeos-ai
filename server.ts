@@ -24,6 +24,15 @@ import { executeEmergencyKillSwitch } from './server/risk/killSwitchEngine.js';
 
 dotenv.config();
 
+// Global process error resilience for Cloud Run production containers
+process.on('uncaughtException', (err: any) => {
+  console.error('[TradeOS Server] Uncaught Exception caught safely:', err?.message || err);
+});
+
+process.on('unhandledRejection', (reason: any) => {
+  console.error('[TradeOS Server] Unhandled Rejection caught safely:', reason?.message || reason);
+});
+
 const app = express();
 const PORT = 3000;
 
@@ -2158,32 +2167,56 @@ app.post('/api/founder/photo', (req: Request, res: Response) => {
 // ---------------- VITE MIDDLEWARE / SERVING ----------------
 
 async function startServer() {
-  if (process.env.NODE_ENV !== 'production') {
-    const vite = await createViteServer({
-      server: { middlewareMode: true },
-      appType: 'spa',
+  try {
+    if (process.env.NODE_ENV !== 'production') {
+      const vite = await createViteServer({
+        server: { middlewareMode: true },
+        appType: 'spa',
+      });
+      app.use(vite.middlewares);
+    } else {
+      const distPath = path.join(process.cwd(), 'dist');
+      if (fs.existsSync(distPath)) {
+        app.use(express.static(distPath));
+      }
+      app.get('*', (req: Request, res: Response) => {
+        const indexPath = path.join(distPath, 'index.html');
+        if (fs.existsSync(indexPath)) {
+          res.sendFile(indexPath);
+        } else {
+          res.status(200).send('<!DOCTYPE html><html><head><title>TradeOS AI</title></head><body><div id="root">TradeOS AI Loading...</div></body></html>');
+        }
+      });
+    }
+
+    const server = http.createServer(app);
+
+    // Attach High-Throughput Real-Time WebSocket Streaming Engine safely
+    try {
+      wsManager.attachToServer(server);
+    } catch (wsErr) {
+      console.warn('[TradeOS WS Engine] Warning attaching WebSocket server:', wsErr);
+    }
+
+    server.listen(PORT, '0.0.0.0', () => {
+      console.log(`TradeOS AI live server running at http://0.0.0.0:${PORT}`);
+      console.log(`TradeOS Real-time WebSocket streaming active at ws://0.0.0.0:${PORT}/ws/stream`);
+      console.log(`TradeOS Algorithmic Router active at http://0.0.0.0:${PORT}/api/v1/trade`);
+      
+      // Boot the 24/7 Autonomous Market Sentinel Scanner safely
+      try {
+        startMarketSentinelWorker();
+      } catch (sentinelErr) {
+        console.warn('[Sentinel] Worker startup warning:', sentinelErr);
+      }
     });
-    app.use(vite.middlewares);
-  } else {
-    const distPath = path.join(process.cwd(), 'dist');
-    app.use(express.static(distPath));
-    app.get('*', (req: Request, res: Response) => {
-      res.sendFile(path.join(distPath, 'index.html'));
+
+    server.on('error', (err: any) => {
+      console.error('[TradeOS HTTP Server] Error:', err?.message || err);
     });
+  } catch (err: any) {
+    console.error('[TradeOS] Critical startup error:', err?.message || err);
   }
-
-  const server = http.createServer(app);
-
-  // Attach High-Throughput Real-Time WebSocket Streaming Engine
-  wsManager.attachToServer(server);
-
-  server.listen(PORT, '0.0.0.0', () => {
-    console.log(`TradeOS AI live server running at http://0.0.0.0:${PORT}`);
-    console.log(`TradeOS Real-time WebSocket streaming active at ws://0.0.0.0:${PORT}/ws/stream`);
-    console.log(`TradeOS Algorithmic Router active at http://0.0.0.0:${PORT}/api/v1/trade`);
-    // Boot the 24/7 Autonomous Market Sentinel Scanner
-    startMarketSentinelWorker();
-  });
 }
 
 startServer();

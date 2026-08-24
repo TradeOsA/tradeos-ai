@@ -16,6 +16,7 @@ import {
   Trophy,
 } from 'lucide-react';
 import { Trade } from '../../types';
+import { formatAssetPrice, getAssetCurrencySymbol } from '../../utils/currencyUtils';
 
 interface TradeDetailModalProps {
   trade: Trade | null;
@@ -50,6 +51,8 @@ export const TradeDetailModal: React.FC<TradeDetailModalProps> = ({
   const isLoss = trade.status === 'LOSS';
   const isBE = trade.status === 'BREAKEVEN';
   const isOpenTrade = trade.status === 'OPEN';
+
+  const currencySymbol = getAssetCurrencySymbol(trade.symbol, trade.market);
 
   const handleExecuteClose = (e: React.FormEvent) => {
     e.preventDefault();
@@ -118,15 +121,15 @@ export const TradeDetailModal: React.FC<TradeDetailModalProps> = ({
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           <div className="p-3 rounded-2xl bg-[#0E121B] border border-white/5 space-y-1">
             <span className="text-[10px] text-slate-500 uppercase font-semibold">Entry Price</span>
-            <div className="text-sm font-bold text-white mono-numbers">${trade.entryPrice.toLocaleString()}</div>
+            <div className="text-sm font-bold text-white mono-numbers">{currencySymbol}{trade.entryPrice.toLocaleString()}</div>
           </div>
           <div className="p-3 rounded-2xl bg-[#0E121B] border border-white/5 space-y-1">
             <span className="text-[10px] text-slate-500 uppercase font-semibold">Stop Loss</span>
-            <div className="text-sm font-bold text-rose-400 mono-numbers">${trade.stopLoss.toLocaleString()}</div>
+            <div className="text-sm font-bold text-rose-400 mono-numbers">{currencySymbol}{trade.stopLoss.toLocaleString()}</div>
           </div>
           <div className="p-3 rounded-2xl bg-[#0E121B] border border-white/5 space-y-1">
             <span className="text-[10px] text-slate-500 uppercase font-semibold">Target Price</span>
-            <div className="text-sm font-bold text-emerald-400 mono-numbers">${trade.targetPrice.toLocaleString()}</div>
+            <div className="text-sm font-bold text-emerald-400 mono-numbers">{currencySymbol}{trade.targetPrice.toLocaleString()}</div>
           </div>
           <div className="p-3 rounded-2xl bg-[#0E121B] border border-white/5 space-y-1">
             <span className="text-[10px] text-slate-500 uppercase font-semibold">Risk : Reward</span>
@@ -139,12 +142,12 @@ export const TradeDetailModal: React.FC<TradeDetailModalProps> = ({
           <div className="p-3.5 rounded-2xl bg-[#0E121B] border border-white/5 space-y-1">
             <span className="text-[10px] text-slate-500 uppercase font-semibold">Net P&L</span>
             <div className={`text-xl font-black mono-numbers ${trade.pnl && trade.pnl >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
-              {trade.pnl !== undefined ? `${trade.pnl >= 0 ? '+' : ''}$${trade.pnl.toLocaleString()} (${trade.pnlPercent?.toFixed(2)}%)` : 'Active Position'}
+              {trade.pnl !== undefined ? `${trade.pnl >= 0 ? '+' : ''}${currencySymbol}${trade.pnl.toLocaleString()} (${trade.pnlPercent?.toFixed(2)}%)` : 'Active Position'}
             </div>
           </div>
           <div className="p-3.5 rounded-2xl bg-[#0E121B] border border-white/5 space-y-1">
             <span className="text-[10px] text-slate-500 uppercase font-semibold">Position Size</span>
-            <div className="text-sm font-bold text-white mono-numbers">${trade.positionSizeUsd.toLocaleString()} ({trade.quantity} Units)</div>
+            <div className="text-sm font-bold text-white mono-numbers">{currencySymbol}{trade.positionSizeUsd.toLocaleString()} ({trade.quantity} Units)</div>
           </div>
           <div className="p-3.5 rounded-2xl bg-[#0E121B] border border-white/5 space-y-1">
             <span className="text-[10px] text-slate-500 uppercase font-semibold">Emotions</span>
@@ -198,7 +201,7 @@ export const TradeDetailModal: React.FC<TradeDetailModalProps> = ({
             <h4 className="text-xs font-bold text-indigo-300 uppercase">Close Active Position</h4>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-[11px] font-semibold text-slate-300 mb-1">Exit Price ($)</label>
+                <label className="block text-[11px] font-semibold text-slate-300 mb-1">Exit Price ({currencySymbol})</label>
                 <input
                   type="number"
                   step="any"

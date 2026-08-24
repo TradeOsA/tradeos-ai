@@ -34,6 +34,7 @@ import { BreakoutSignal, MarketAsset, MarketCategory, TelegramAlertConfig, Break
 import { PageHeader } from '../layout/PageHeader';
 import { TelegramAlertsModal } from '../alerts/TelegramAlertsModal';
 import { calculateRealisticStopLossAndTargets, getUnifiedMarketSessionStatus } from '../../services/autoTrader';
+import { formatAssetPrice, getAssetCurrencySymbol } from '../../utils/currencyUtils';
 
 const DISPATCHED_STORAGE_KEY = 'tradeos_dispatched_alerts_v1';
 const DISPATCHED_CATEGORY_KEY = 'tradeos_dispatched_cat_v1';
@@ -219,7 +220,7 @@ export const generateInstitutionalSignals = (assets: MarketAsset[]): BreakoutSig
     const limitHigh = isBull
       ? Number((price * (1 - discountBuffer * 0.3)).toFixed(price < 2 ? 4 : 2))
       : Number((price * (1 + discountBuffer)).toFixed(price < 2 ? 4 : 2));
-    const entryZone = `$${limitLow.toLocaleString()} - $${limitHigh.toLocaleString()}`;
+    const entryZone = `${formatAssetPrice(limitLow, asset)} - ${formatAssetPrice(limitHigh, asset)}`;
 
     const suggestedEntry = isBull ? limitHigh : limitLow;
 
@@ -279,7 +280,7 @@ export const generateInstitutionalSignals = (assets: MarketAsset[]): BreakoutSig
         bsl: bslPrice,
         ssl: sslPrice,
         fvgZone: entryZone,
-        orderBlockZone: `$${(limitLow * 0.998).toFixed(price < 2 ? 4 : 2)} - $${limitLow.toFixed(price < 2 ? 4 : 2)}`,
+        orderBlockZone: `${formatAssetPrice(limitLow * 0.998, asset)} - ${formatAssetPrice(limitLow, asset)}`,
       },
     };
   });
@@ -791,7 +792,7 @@ export const BreakoutRadarView: React.FC<BreakoutRadarViewProps> = ({
                       </span>
                     </div>
                     <div className="text-xs text-slate-400 font-mono mt-0.5">
-                      Live Price: <strong className="text-white">${sig.price.toLocaleString()}</strong>
+                      Live Price: <strong className="text-white">{formatAssetPrice(sig.price, sig)}</strong>
                       <span className={`ml-2 font-bold ${sig.change24h >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
                         {sig.change24h >= 0 ? '+' : ''}{sig.change24h}%
                       </span>
@@ -815,13 +816,13 @@ export const BreakoutRadarView: React.FC<BreakoutRadarViewProps> = ({
                   <span className="text-[9px] text-rose-400 block font-sans uppercase font-bold">
                     🔴 BSL (Buy-Side Liq)
                   </span>
-                  <span className="text-xs text-white font-bold">${sig.liquidityPools?.bsl.toLocaleString()}</span>
+                  <span className="text-xs text-white font-bold">{formatAssetPrice(sig.liquidityPools?.bsl, sig)}</span>
                 </div>
                 <div className="p-2 rounded-lg bg-[#121827] border border-[#1C263C]">
                   <span className="text-[9px] text-emerald-400 block font-sans uppercase font-bold">
                     🟢 SSL (Sell-Side Liq)
                   </span>
-                  <span className="text-xs text-white font-bold">${sig.liquidityPools?.ssl.toLocaleString()}</span>
+                  <span className="text-xs text-white font-bold">{formatAssetPrice(sig.liquidityPools?.ssl, sig)}</span>
                 </div>
                 <div className="p-2 rounded-lg bg-[#121827] border border-teal-500/30 col-span-2 sm:col-span-1">
                   <span className="text-[9px] text-teal-300 block font-sans uppercase font-bold">
@@ -847,14 +848,14 @@ export const BreakoutRadarView: React.FC<BreakoutRadarViewProps> = ({
                     <span className="text-[10px] text-teal-300 block uppercase font-sans font-bold">
                       🟢 Optimal Limit Entry Zone
                     </span>
-                    <span className="text-sm text-white font-black">{sig.entryZone || `$${sig.suggestedEntry.toLocaleString()}`}</span>
+                    <span className="text-sm text-white font-black">{sig.entryZone || formatAssetPrice(sig.suggestedEntry, sig)}</span>
                   </div>
                   <div>
                     <span className="text-[10px] text-rose-400 block uppercase font-sans font-bold">
                       🛑 Invalidation Stop Loss (SL)
                     </span>
                     <div className="flex items-baseline gap-1.5">
-                      <span className="text-sm text-rose-400 font-black">${sig.suggestedSL.toLocaleString()}</span>
+                      <span className="text-sm text-rose-400 font-black">{formatAssetPrice(sig.suggestedSL, sig)}</span>
                       <span className="text-[10px] text-slate-400 font-sans truncate">({sig.invalidationReason})</span>
                     </div>
                   </div>
@@ -863,15 +864,15 @@ export const BreakoutRadarView: React.FC<BreakoutRadarViewProps> = ({
                 <div className="grid grid-cols-3 gap-2 text-center pt-0.5">
                   <div className="p-2 rounded-lg bg-[#0E131F] border border-[#1C263C]">
                     <span className="text-[9px] text-slate-400 block font-sans uppercase font-bold">TP1 (Scale 50%)</span>
-                    <span className="text-xs text-emerald-400 font-bold">${sig.tp1?.toLocaleString()}</span>
+                    <span className="text-xs text-emerald-400 font-bold">{formatAssetPrice(sig.tp1, sig)}</span>
                   </div>
                   <div className="p-2 rounded-lg bg-[#0E131F] border border-emerald-500/30">
                     <span className="text-[9px] text-emerald-300 block font-sans uppercase font-bold">TP2 (Liquidity)</span>
-                    <span className="text-xs text-emerald-300 font-black">${sig.tp2?.toLocaleString()}</span>
+                    <span className="text-xs text-emerald-300 font-black">{formatAssetPrice(sig.tp2, sig)}</span>
                   </div>
                   <div className="p-2 rounded-lg bg-[#0E131F] border border-[#1C263C]">
                     <span className="text-[9px] text-amber-400 block font-sans uppercase font-bold">TP3 (Runner)</span>
-                    <span className="text-xs text-amber-400 font-bold">${sig.tp3?.toLocaleString()}</span>
+                    <span className="text-xs text-amber-400 font-bold">{formatAssetPrice(sig.tp3, sig)}</span>
                   </div>
                 </div>
 
@@ -902,7 +903,7 @@ export const BreakoutRadarView: React.FC<BreakoutRadarViewProps> = ({
 
                   <div className="grid grid-cols-2 gap-2 text-xs">
                     <div>
-                      <label className="text-[10px] text-slate-400 block">Account Capital ($):</label>
+                      <label className="text-[10px] text-slate-400 block">Account Capital ({getAssetCurrencySymbol(sig)}):</label>
                       <input
                         type="number"
                         value={calcAccountSize}
@@ -928,7 +929,7 @@ export const BreakoutRadarView: React.FC<BreakoutRadarViewProps> = ({
                   <div className="p-2.5 rounded-lg bg-[#121827] border border-[#1C263C] grid grid-cols-3 gap-2 text-center font-mono">
                     <div>
                       <span className="text-[9px] text-slate-400 block font-sans">Max Loss (SL hit)</span>
-                      <span className="text-xs text-rose-400 font-bold">-${riskDollar.toFixed(2)}</span>
+                      <span className="text-xs text-rose-400 font-bold">-{getAssetCurrencySymbol(sig)}{riskDollar.toFixed(2)}</span>
                     </div>
                     <div>
                       <span className="text-[9px] text-slate-400 block font-sans">Optimal Quantity</span>
@@ -936,7 +937,7 @@ export const BreakoutRadarView: React.FC<BreakoutRadarViewProps> = ({
                     </div>
                     <div>
                       <span className="text-[9px] text-slate-400 block font-sans">Profit at TP2</span>
-                      <span className="text-xs text-emerald-400 font-bold">+${(riskDollar * sig.riskReward).toFixed(2)}</span>
+                      <span className="text-xs text-emerald-400 font-bold">+{getAssetCurrencySymbol(sig)}{(riskDollar * sig.riskReward).toFixed(2)}</span>
                     </div>
                   </div>
                 </div>

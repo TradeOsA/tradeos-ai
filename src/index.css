@@ -2,43 +2,43 @@
 
 @layer base {
   * {
-    border-color: #1E2638;
+    border-color: #1F2937;
   }
 }
 
 /* =========================================================================
-   TRADEOS PRO - INSTITUTIONAL ULTRA-RESPONSIVE ZERO-LAG DESIGN ENGINE
-   Seamless Dark & Light Mode Institutional System
+   TRADEOS PRO - INSTITUTIONAL TERMINAL DESIGN SYSTEM
+   Deep Slate Dark & Crisp Institutional Aesthetics
    ========================================================================= */
 
 :root {
-  --bg-main: #080B11;
-  --bg-surface: #0E131F;
-  --bg-card: #121827;
-  --bg-input: #0A0E17;
-  --border-subtle: #1C263C;
-  --border-strong: #283654;
-  --border-active: #10B981;
-  --text-main: #F3F4F6;
-  --text-muted: #94A3B8;
+  --bg-main: #090D16;
+  --bg-surface: #111827;
+  --bg-card: #111827;
+  --bg-input: #0D1320;
+  --border-subtle: #1F2937;
+  --border-strong: #374151;
+  --border-active: #3B82F6;
+  --text-main: #F9FAFB;
+  --text-muted: #9CA3AF;
+  --accent-blue: #3B82F6;
   --accent-emerald: #10B981;
-  --accent-cyan: #06B6D4;
-  --accent-indigo: #6366F1;
+  --accent-rose: #EF4444;
 }
 
 html.light {
   --bg-main: #F8FAFC;
   --bg-surface: #FFFFFF;
-  --bg-card: #F1F5F9;
+  --bg-card: #FFFFFF;
   --bg-input: #FFFFFF;
-  --border-subtle: #E2E8F0;
-  --border-strong: #CBD5E1;
-  --border-active: #059669;
-  --text-main: #0F172A;
-  --text-muted: #64748B;
+  --border-subtle: #E5E7EB;
+  --border-strong: #D1D5DB;
+  --border-active: #2563EB;
+  --text-main: #111827;
+  --text-muted: #6B7280;
+  --accent-blue: #2563EB;
   --accent-emerald: #059669;
-  --accent-cyan: #0891B2;
-  --accent-indigo: #4F46E5;
+  --accent-rose: #DC2626;
 }
 
 /* Ultra-Crisp Font Rendering & 120 FPS Direct GPU Blitting */
@@ -56,49 +56,49 @@ html, body {
 /* Base Panel Classes for Dark Mode */
 .glass-panel,
 .pro-card {
-  background-color: #0E131F !important;
+  background-color: #111827 !important;
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
-  border: 1px solid #1C263C !important;
-  box-shadow: 0 4px 24px -2px rgba(0, 0, 0, 0.45) !important;
+  border: 1px solid #1F2937 !important;
+  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.4) !important;
 }
 
 .glass-panel-subtle {
-  background-color: #0B0F19 !important;
+  background-color: #0D1320 !important;
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
-  border: 1px solid #182032 !important;
+  border: 1px solid #1F2937 !important;
 }
 
 .glass-card,
 .pro-card-interactive {
-  background-color: #121827 !important;
+  background-color: #111827 !important;
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
-  border: 1px solid #1C263C !important;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.25) !important;
+  border: 1px solid #1F2937 !important;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.25) !important;
   transition: transform 0.15s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.15s ease, background-color 0.15s ease !important;
 }
 
 .glass-card-hover:hover,
 .pro-card-interactive:hover {
-  border-color: #334366 !important;
-  background-color: #162033 !important;
-  box-shadow: 0 8px 30px -4px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(16, 185, 129, 0.4) !important;
-  transform: translateY(-2px);
+  border-color: #374151 !important;
+  background-color: #161F30 !important;
+  box-shadow: 0 6px 20px -4px rgba(0, 0, 0, 0.5) !important;
+  transform: translateY(-1px);
 }
 
 .glass-pill {
-  background-color: #131A2B !important;
+  background-color: #111827 !important;
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
-  border: 1px solid #1F2A40 !important;
+  border: 1px solid #1F2937 !important;
   transition: background-color 0.15s ease, border-color 0.15s ease;
 }
 
 .glass-pill:hover {
-  background-color: #19233A !important;
-  border-color: #314264 !important;
+  background-color: #161F30 !important;
+  border-color: #374151 !important;
 }
 
 .pro-badge {
@@ -106,11 +106,10 @@ html, body {
   align-items: center;
   gap: 0.375rem;
   font-size: 0.6875rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  padding: 0.25rem 0.625rem;
-  border-radius: 0.5rem;
+  font-weight: 600;
+  letter-spacing: 0.025em;
+  padding: 0.2rem 0.5rem;
+  border-radius: 0.375rem;
 }
 
 /* =========================================================================
@@ -551,34 +550,29 @@ html.light ::-webkit-scrollbar-thumb:hover {
   animation-play-state: paused;
 }
 
-/* Glow Effects */
+/* Subtle Institutional Accent Shadows */
 .glow-emerald {
-  box-shadow: 0 0 30px -5px rgba(16, 185, 129, 0.22);
+  box-shadow: 0 4px 14px -2px rgba(16, 185, 129, 0.15);
 }
 
 .glow-rose {
-  box-shadow: 0 0 30px -5px rgba(244, 63, 94, 0.22);
+  box-shadow: 0 4px 14px -2px rgba(239, 68, 68, 0.15);
 }
 
-.glow-indigo {
-  box-shadow: 0 0 35px -5px rgba(99, 102, 241, 0.25);
+.glow-indigo,
+.glow-blue {
+  box-shadow: 0 4px 14px -2px rgba(59, 130, 246, 0.15);
 }
 
 .glow-cyan {
-  box-shadow: 0 0 35px -5px rgba(6, 182, 212, 0.22);
+  box-shadow: 0 4px 14px -2px rgba(59, 130, 246, 0.12);
 }
 
-/* Radial Ambient Spotlights */
+/* Subtle Slate Background */
 .bg-ambient-spotlight {
-  background-image: 
-    radial-gradient(at 10% 10%, rgba(16, 185, 129, 0.06) 0px, transparent 50%),
-    radial-gradient(at 90% 0%, rgba(99, 102, 241, 0.08) 0px, transparent 50%),
-    radial-gradient(at 50% 100%, rgba(6, 182, 212, 0.05) 0px, transparent 60%);
+  background-color: #090D16;
 }
 
 html.light .bg-ambient-spotlight {
-  background-image: 
-    radial-gradient(at 10% 10%, rgba(16, 185, 129, 0.03) 0px, transparent 50%),
-    radial-gradient(at 90% 0%, rgba(99, 102, 241, 0.04) 0px, transparent 50%),
-    radial-gradient(at 50% 100%, rgba(6, 182, 212, 0.02) 0px, transparent 60%);
+  background-color: #F8FAFC;
 }

@@ -47,6 +47,7 @@ import {
 } from '../../types';
 import { PageHeader } from '../layout/PageHeader';
 import { useCurrency } from '../../context/CurrencyContext';
+import { isIndianMarketAsset, formatAssetPrice } from '../../utils/currencyUtils';
 import { OrderConfirmationModal } from './OrderConfirmationModal';
 import { AutoTradeConfigModal } from './AutoTradeConfigModal';
 import { AutoTradeLogModal } from './AutoTradeLogModal';
@@ -256,25 +257,7 @@ export const PaperTradingView: React.FC<PaperTradingViewProps> = ({
   };
 
   const isIndianAsset = (assetOrSymbol?: string | MarketAsset | null): boolean => {
-    if (!assetOrSymbol) return false;
-    const sym = (typeof assetOrSymbol === 'string' ? assetOrSymbol : assetOrSymbol.symbol || '').toUpperCase();
-    const cat = typeof assetOrSymbol === 'object' ? assetOrSymbol.category || '' : '';
-    return (
-      sym.includes('^NSE') ||
-      sym.includes('^BSE') ||
-      sym.includes('NIFTY') ||
-      sym.includes('SENSEX') ||
-      sym.includes('BANKNIFTY') ||
-      sym.includes('FINNIFTY') ||
-      sym.endsWith('.NS') ||
-      sym.endsWith('.BO') ||
-      sym.includes('RELIANCE') ||
-      sym.includes('HDFCBANK') ||
-      sym.includes(' CE') ||
-      sym.includes(' PE') ||
-      cat === 'Indian Stocks / F&O' ||
-      sym === 'USD/INR'
-    );
+    return isIndianMarketAsset(assetOrSymbol);
   };
 
   const formatCurrencyForAsset = (
@@ -283,18 +266,10 @@ export const PaperTradingView: React.FC<PaperTradingViewProps> = ({
     showSign = false,
     forcedDecimals?: number
   ): string => {
-    if (isNaN(val)) return '0';
-    const isInd = isIndianAsset(symbolOrAsset);
-    const sign = val > 0 && showSign ? '+' : val < 0 ? '-' : '';
-    const absVal = Math.abs(val);
-
-    if (isInd) {
-      const dec = forcedDecimals !== undefined ? forcedDecimals : absVal < 10 && absVal % 1 !== 0 ? 2 : 2;
-      return `${sign}₹${absVal.toLocaleString('en-IN', { minimumFractionDigits: dec, maximumFractionDigits: dec })}`;
-    } else {
-      const dec = forcedDecimals !== undefined ? forcedDecimals : absVal < 2 ? 4 : 2;
-      return `${sign}$${absVal.toLocaleString('en-US', { minimumFractionDigits: dec, maximumFractionDigits: dec })}`;
-    }
+    return formatAssetPrice(val, symbolOrAsset, {
+      showPlusSign: showSign,
+      decimals: forcedDecimals,
+    });
   };
 
   // -------------------------------------------------------------

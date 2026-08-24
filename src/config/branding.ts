@@ -19,7 +19,7 @@ export const APP_CONFIG: BrandingConfig = {
   shortName: 'TradeosAi',
   domain: 'tradeosai.in',
   year: '2026',
-  copyrightOwner: 'TradeosAi',
+  copyrightOwner: 'TradeosAi Enterprise Technologies',
   rightsReservedText: 'All Rights Reserved © 2026 TradeosAi. Built with institutional-grade risk intelligence & high-speed execution.',
-  supportEmail: 'tradeos.crypto@gmail.com',
+  supportEmail: 'support@tradeosai.in',
 };

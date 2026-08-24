@@ -1,6 +1,7 @@
 import React from 'react';
 import { TrendingUp, TrendingDown } from 'lucide-react';
 import { MarketAsset } from '../../types';
+import { formatAssetPrice } from '../../utils/currencyUtils';
 
 interface LiveTickerMarqueeProps {
   assets: MarketAsset[];
@@ -39,10 +40,7 @@ export const LiveTickerMarquee: React.FC<LiveTickerMarqueeProps> = ({
                   {item.symbol}
                 </span>
                 <span className="font-mono text-slate-300 text-[11px]">
-                  ${item.price.toLocaleString(undefined, {
-                    minimumFractionDigits: item.price < 10 ? 4 : 2,
-                    maximumFractionDigits: item.price < 10 ? 4 : 2,
-                  })}
+                  {formatAssetPrice(item.price, item)}
                 </span>
                 <span
                   className={`inline-flex items-center gap-0.5 text-[10px] font-bold px-1.5 py-0.2 rounded font-mono ${

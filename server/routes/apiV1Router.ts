@@ -606,11 +606,13 @@ apiV1Router.post('/payments/submit-utr', (req: Request, res: Response) => {
 
 /**
  * Razorpay Webhook Ingestion
- * POST /api/v1/webhooks/razorpay
+ * POST /api/v1/payments/webhook & POST /api/v1/webhooks/razorpay
+ * Listens for order.paid, verifies RAZORPAY_WEBHOOK_SECRET and upgrades user to PRO in Firestore
  */
-apiV1Router.post('/webhooks/razorpay', (req: Request, res: Response) => {
-  const signature = (req.headers['x-razorpay-signature'] as string) || '';
-  const result = processRazorpayWebhook(JSON.stringify(req.body), signature);
+apiV1Router.post(['/payments/webhook', '/webhooks/razorpay'], (req: Request, res: Response) => {
+  const signature = (req.headers['x-razorpay-signature'] as string) || (req.headers['X-Razorpay-Signature'] as string) || '';
+  const bodyContent = typeof req.body === 'string' ? req.body : JSON.stringify(req.body);
+  const result = processRazorpayWebhook(bodyContent, signature);
   if (result.success) {
     res.json(result);
   } else {
@@ -625,7 +627,8 @@ apiV1Router.post('/webhooks/razorpay', (req: Request, res: Response) => {
 apiV1Router.post('/webhooks/cashfree', (req: Request, res: Response) => {
   const signature = (req.headers['x-webhook-signature'] as string) || '';
   const timestamp = (req.headers['x-webhook-timestamp'] as string) || '';
-  const result = processCashfreeWebhook(JSON.stringify(req.body), signature, timestamp);
+  const bodyContent = typeof req.body === 'string' ? req.body : JSON.stringify(req.body);
+  const result = processCashfreeWebhook(bodyContent, signature, timestamp);
   res.json(result);
 });
 
@@ -635,20 +638,24 @@ apiV1Router.post('/webhooks/cashfree', (req: Request, res: Response) => {
  */
 apiV1Router.post('/webhooks/stripe', (req: Request, res: Response) => {
   const signature = (req.headers['stripe-signature'] as string) || '';
-  const result = processStripeWebhook(JSON.stringify(req.body), signature);
+  const bodyContent = typeof req.body === 'string' ? req.body : JSON.stringify(req.body);
+  const result = processStripeWebhook(bodyContent, signature);
   res.json(result);
 });
 
 /**
- * Get User Subscription Tier
- * GET /api/v1/user/subscription
+ * Get User Subscription Tier & Status
+ * GET /api/v1/user/subscription & GET /api/v1/payments/subscription-status
  */
-apiV1Router.get('/user/subscription', (req: Request, res: Response) => {
+apiV1Router.get(['/user/subscription', '/payments/subscription-status'], (req: Request, res: Response) => {
   const userId = (req.query.userId as string) || 'trader_primary';
-  const sub = getUserTier(userId);
+  const userEmail = (req.query.email as string) || (req.query.userEmail as string);
+  const sub = getUserTier(userId, userEmail);
+  const tier = sub?.tier || 'FREE';
   res.json({
     success: true,
-    tier: sub?.tier || 'FREE',
+    tier,
+    isPro: tier === 'PRO' || tier === 'ULTIMATE',
     subscription: sub,
   });
 });

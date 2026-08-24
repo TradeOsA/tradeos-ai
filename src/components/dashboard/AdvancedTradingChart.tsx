@@ -21,6 +21,7 @@ import {
   Layers
 } from 'lucide-react';
 import { MarketAsset, CandleData } from '../../types';
+import { formatAssetPrice, getAssetCurrencySymbol } from '../../utils/currencyUtils';
 
 interface AdvancedTradingChartProps {
   asset: MarketAsset;
@@ -115,6 +116,8 @@ export const AdvancedTradingChart: React.FC<AdvancedTradingChartProps> = ({
   const svgRef = useRef<SVGSVGElement>(null);
   const livePriceRef = useRef<number>(asset.price);
   const lastTickTimeRef = useRef<number>(0);
+
+  const assetCurrencySymbol = getAssetCurrencySymbol(asset);
 
   // Exit fullscreen on Escape key
   useEffect(() => {
@@ -619,7 +622,7 @@ export const AdvancedTradingChart: React.FC<AdvancedTradingChartProps> = ({
             <div className={`text-2xl font-black font-mono tracking-tight mono-numbers flex items-center gap-1.5 transition-colors ${
               tickFlash ? (isLiveUp ? 'text-emerald-300' : 'text-rose-300') : 'text-white'
             }`}>
-              <span>${currentLivePrice.toLocaleString(undefined, { minimumFractionDigits: currentLivePrice < 2 ? 4 : 2, maximumFractionDigits: currentLivePrice < 2 ? 4 : 2 })}</span>
+              <span>{formatAssetPrice(currentLivePrice, asset)}</span>
               {lastTickDirection === 'UP' ? (
                 <TrendingUp className="w-4 h-4 text-emerald-400 animate-bounce" />
               ) : lastTickDirection === 'DOWN' ? (
@@ -909,18 +912,18 @@ export const AdvancedTradingChart: React.FC<AdvancedTradingChartProps> = ({
           <div className="flex items-center gap-4 flex-wrap">
             <span className="text-slate-200 font-semibold">Time: {currentHoverCandle.time}</span>
             <span>
-              O: <strong className="text-slate-200">${currentHoverCandle.open}</strong>
+              O: <strong className="text-slate-200">{assetCurrencySymbol}{currentHoverCandle.open}</strong>
             </span>
             <span>
-              H: <strong className="text-slate-200">${currentHoverCandle.high}</strong>
+              H: <strong className="text-slate-200">{assetCurrencySymbol}{currentHoverCandle.high}</strong>
             </span>
             <span>
-              L: <strong className="text-slate-200">${currentHoverCandle.low}</strong>
+              L: <strong className="text-slate-200">{assetCurrencySymbol}{currentHoverCandle.low}</strong>
             </span>
             <span>
               C:{' '}
               <strong className={currentHoverCandle.close >= currentHoverCandle.open ? 'text-emerald-400' : 'text-rose-400'}>
-                ${currentHoverCandle.close}
+                {assetCurrencySymbol}{currentHoverCandle.close}
               </strong>
             </span>
             <span>
@@ -1418,7 +1421,7 @@ export const AdvancedTradingChart: React.FC<AdvancedTradingChartProps> = ({
                       fontFamily="monospace"
                       fontWeight="bold"
                     >
-                      {isLong ? 'LONG' : 'SHORT'} R:R 1:{rr} (Entry: ${draw.entryPrice.toFixed(2)})
+                      {isLong ? 'LONG' : 'SHORT'} R:R 1:{rr} (Entry: {assetCurrencySymbol}{draw.entryPrice.toFixed(2)})
                     </text>
                   </g>
                 );
@@ -1483,7 +1486,7 @@ export const AdvancedTradingChart: React.FC<AdvancedTradingChartProps> = ({
                   textAnchor="middle"
                   fontWeight="bold"
                 >
-                  ${getPriceFromY(crosshairPos.y).toFixed(asset.price < 2 ? 4 : 2)}
+                  {assetCurrencySymbol}{getPriceFromY(crosshairPos.y).toFixed(asset.price < 2 ? 4 : 2)}
                 </text>
               </g>
             )}

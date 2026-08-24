@@ -348,6 +348,21 @@ export interface UserProfile {
   theme: 'cyber-dark' | 'midnight-blue' | 'emerald-obsidian';
   soundEnabled: boolean;
   autoSaveCloud: boolean;
+  subscriptionStatus?: 'FREE' | 'PRO' | 'ULTIMATE' | 'INSTITUTIONAL';
+  subscriptionTier?: 'FREE' | 'PRO' | 'ULTIMATE' | 'INSTITUTIONAL';
+  isPro?: boolean;
+  subscriptionExpiresAt?: string;
+  subscription?: {
+    status: string;
+    tier: string;
+    gateway?: string;
+    paymentId?: string;
+    orderId?: string;
+    amount?: number;
+    currency?: string;
+    activatedAt?: string;
+    expiresAt?: string;
+  };
 }
 
 export interface FounderProfile {

@@ -22,6 +22,7 @@ import {
   EmotionBefore,
   EmotionAfter,
 } from '../../types';
+import { getAssetCurrencySymbol } from '../../utils/currencyUtils';
 
 interface NewTradeModalProps {
   isOpen: boolean;
@@ -55,6 +56,8 @@ export const NewTradeModal: React.FC<NewTradeModalProps> = ({
   const [emotionAfter, setEmotionAfter] = useState<EmotionAfter | undefined>(undefined);
   const [tagInput, setTagInput] = useState('');
   const [tags, setTags] = useState<string[]>(['SMC', 'Discipline']);
+
+  const currencySymbol = getAssetCurrencySymbol(symbol, market);
 
   useEffect(() => {
     if (initialDraft) {
@@ -266,7 +269,7 @@ export const NewTradeModal: React.FC<NewTradeModalProps> = ({
           {/* Row 2: Entry, Stop Loss, Target, Quantity */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             <div>
-              <label className="block text-[11px] font-semibold text-slate-300 mb-1">Entry Price ($)</label>
+              <label className="block text-[11px] font-semibold text-slate-300 mb-1">Entry Price ({currencySymbol})</label>
               <input
                 type="number"
                 step="any"
@@ -277,7 +280,7 @@ export const NewTradeModal: React.FC<NewTradeModalProps> = ({
               />
             </div>
             <div>
-              <label className="block text-[11px] font-semibold text-slate-300 mb-1">Stop Loss ($)</label>
+              <label className="block text-[11px] font-semibold text-slate-300 mb-1">Stop Loss ({currencySymbol})</label>
               <input
                 type="number"
                 step="any"
@@ -288,7 +291,7 @@ export const NewTradeModal: React.FC<NewTradeModalProps> = ({
               />
             </div>
             <div>
-              <label className="block text-[11px] font-semibold text-slate-300 mb-1">Take Target ($)</label>
+              <label className="block text-[11px] font-semibold text-slate-300 mb-1">Take Target ({currencySymbol})</label>
               <input
                 type="number"
                 step="any"
@@ -315,7 +318,7 @@ export const NewTradeModal: React.FC<NewTradeModalProps> = ({
           {status !== 'OPEN' && (
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 p-3 rounded-2xl bg-white/[0.02] border border-white/10">
               <div>
-                <label className="block text-[11px] font-semibold text-slate-300 mb-1">Exit Price ($)</label>
+                <label className="block text-[11px] font-semibold text-slate-300 mb-1">Exit Price ({currencySymbol})</label>
                 <input
                   type="number"
                   step="any"
@@ -327,7 +330,7 @@ export const NewTradeModal: React.FC<NewTradeModalProps> = ({
                 />
               </div>
               <div>
-                <label className="block text-[11px] font-semibold text-slate-300 mb-1">Commission & Fees ($)</label>
+                <label className="block text-[11px] font-semibold text-slate-300 mb-1">Commission & Fees ({currencySymbol})</label>
                 <input
                   type="number"
                   step="any"
@@ -339,7 +342,7 @@ export const NewTradeModal: React.FC<NewTradeModalProps> = ({
               <div>
                 <label className="block text-[11px] font-semibold text-slate-300 mb-1">Calculated Net P&L</label>
                 <div className={`text-sm font-black mono-numbers py-2 ${computedPnL && computedPnL >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
-                  {computedPnL !== undefined ? `${computedPnL >= 0 ? '+' : ''}$${computedPnL.toFixed(2)} (${computedPnLPercent?.toFixed(2)}%)` : '—'}
+                  {computedPnL !== undefined ? `${computedPnL >= 0 ? '+' : ''}${currencySymbol}${computedPnL.toFixed(2)} (${computedPnLPercent?.toFixed(2)}%)` : '—'}
                 </div>
               </div>
             </div>

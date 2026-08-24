@@ -1,5 +1,13 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 
+import {
+  isIndianMarketAsset,
+  isIndianMarketSymbol,
+  getAssetCurrencySymbol,
+  formatAssetPrice,
+  AssetIdentifier,
+} from '../utils/currencyUtils';
+
 export type CurrencyCode = 'USD' | 'INR' | 'EUR' | 'GBP' | 'AED';
 
 export interface CurrencyConfig {
@@ -23,6 +31,9 @@ interface CurrencyContextType {
   config: CurrencyConfig;
   setCurrency: (currency: CurrencyCode) => void;
   formatCurrency: (amountInUsd: number, options?: { showPlusSign?: boolean; maximumFractionDigits?: number }) => string;
+  formatAssetPrice: (price: number | undefined | null, assetOrSymbol?: string | AssetIdentifier | null, options?: { showPlusSign?: boolean; decimals?: number; fallback?: string }) => string;
+  getAssetCurrencySymbol: (assetOrSymbol?: string | AssetIdentifier | null, marketCategory?: string) => string;
+  isIndianMarketAsset: (assetOrSymbol?: string | AssetIdentifier | null, marketCategory?: string) => boolean;
   convertFromUsd: (amountInUsd: number) => number;
 }
 
@@ -40,7 +51,7 @@ export const CurrencyProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     } catch (e) {
       console.warn('Failed to load currency preference', e);
     }
-    return 'USD';
+    return 'INR';
   });
 
   const setCurrency = (curr: CurrencyCode) => {
@@ -85,12 +96,22 @@ export const CurrencyProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         config,
         setCurrency,
         formatCurrency,
+        formatAssetPrice,
+        getAssetCurrencySymbol,
+        isIndianMarketAsset,
         convertFromUsd,
       }}
     >
       {children}
     </CurrencyContext.Provider>
   );
+};
+
+export {
+  isIndianMarketAsset,
+  isIndianMarketSymbol,
+  getAssetCurrencySymbol,
+  formatAssetPrice,
 };
 
 export const useCurrency = (): CurrencyContextType => {

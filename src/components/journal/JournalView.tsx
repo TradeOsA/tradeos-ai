@@ -75,7 +75,7 @@ export const JournalView: React.FC<JournalViewProps> = ({
   onBack,
   onNavigateTab,
 }) => {
-  const { formatCurrency } = useCurrency();
+  const { formatCurrency, formatAssetPrice } = useCurrency();
   const [search, setSearch] = useState('');
   const [filterMarket, setFilterMarket] = useState<string>('All');
   const [filterStatus, setFilterStatus] = useState<string>('All');
@@ -539,10 +539,10 @@ export const JournalView: React.FC<JournalViewProps> = ({
                           </span>
                         </td>
                         <td className="py-2.5 px-3 mono-numbers font-medium text-slate-200">
-                          {formatCurrency(trade.entryPrice)}
+                          {formatAssetPrice(trade.entryPrice, trade.symbol)}
                         </td>
                         <td className="py-2.5 px-3 mono-numbers text-slate-400">
-                          {trade.exitPrice ? formatCurrency(trade.exitPrice) : '—'}
+                          {trade.exitPrice ? formatAssetPrice(trade.exitPrice, trade.symbol) : '—'}
                         </td>
                         <td className="py-2.5 px-3 mono-numbers font-semibold text-emerald-400">
                           1:{trade.riskRewardRatio}
@@ -550,7 +550,7 @@ export const JournalView: React.FC<JournalViewProps> = ({
                         <td className="py-2.5 px-3 mono-numbers font-bold">
                           {trade.pnl !== undefined ? (
                             <span className={trade.pnl >= 0 ? 'text-emerald-400' : 'text-rose-400'}>
-                              {trade.pnl >= 0 ? '+' : ''}{formatCurrency(trade.pnl)}
+                              {formatAssetPrice(trade.pnl, trade.symbol, { showPlusSign: true })}
                             </span>
                           ) : (
                             <span className="text-slate-500">Live</span>

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { LayoutGrid } from 'lucide-react';
 import { MarketAsset } from '../../types';
+import { formatAssetPrice } from '../../utils/currencyUtils';
 
 interface MarketHeatmapWidgetProps {
   assets: MarketAsset[];
@@ -87,7 +88,7 @@ export const MarketHeatmapWidget: React.FC<MarketHeatmapWidgetProps> = ({
                     {isPositive ? '+' : ''}{asset.change24h.toFixed(2)}%
                   </span>
                   <span className="text-[11px] font-mono text-slate-300 mono-numbers">
-                    ${asset.price.toLocaleString(undefined, { minimumFractionDigits: asset.price < 2 ? 4 : 2 })}
+                    {formatAssetPrice(asset.price, asset)}
                   </span>
                 </div>
                 <div className="flex items-center justify-between text-[10px] text-slate-400 mt-1">

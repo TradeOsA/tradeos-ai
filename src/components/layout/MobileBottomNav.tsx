@@ -76,26 +76,26 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
     <>
       {/* "More" Drawer Modal for Mobile */}
       {isMoreOpen && (
-        <div className="lg:hidden fixed inset-0 z-50 flex flex-col justify-end bg-black/70 backdrop-blur-md animate-in fade-in duration-200">
+        <div className="lg:hidden fixed inset-0 z-50 flex flex-col justify-end bg-black/70 backdrop-blur-sm animate-in fade-in duration-200">
           <div
             className="fixed inset-0"
             onClick={() => setIsMoreOpen(false)}
           />
-          <div className="relative z-10 bg-[#0B0F1A] border-t border-white/15 rounded-t-3xl p-5 pb-8 space-y-4 max-h-[85vh] overflow-y-auto shadow-2xl animate-in slide-in-from-bottom duration-250 glass-panel">
+          <div className="relative z-10 bg-[#111827] border-t border-[#1F2937] rounded-t-2xl p-5 pb-8 space-y-4 max-h-[85vh] overflow-y-auto shadow-2xl animate-in slide-in-from-bottom duration-200">
             {/* Drawer Header */}
-            <div className="flex items-center justify-between pb-3 border-b border-white/10">
+            <div className="flex items-center justify-between pb-3 border-b border-[#1F2937]">
               <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-emerald-500 to-indigo-600 flex items-center justify-center text-slate-950 font-black text-xs">
+                <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center text-white font-bold text-xs">
                   T
                 </div>
                 <div>
-                  <h3 className="text-sm font-black text-white">Navigation Hub</h3>
-                  <p className="text-[10px] text-slate-400">All tools & learning modules</p>
+                  <h3 className="text-sm font-bold text-white">Navigation Hub</h3>
+                  <p className="text-[10px] text-slate-400">Terminal tools & settings</p>
                 </div>
               </div>
               <button
                 onClick={() => setIsMoreOpen(false)}
-                className="p-1.5 rounded-xl bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white"
+                className="p-1.5 rounded-lg bg-[#0D1320] hover:bg-[#161F30] text-slate-400 hover:text-white border border-[#1F2937]"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -108,10 +108,10 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
                   setIsMoreOpen(false);
                   onOpenAuth();
                 }}
-                className="w-full flex items-center justify-between p-3.5 rounded-2xl bg-gradient-to-r from-emerald-500/20 via-teal-500/15 to-indigo-500/20 hover:from-emerald-500/30 hover:to-indigo-500/30 border border-emerald-500/40 text-left cursor-pointer shadow-md active:scale-98 transition-all"
+                className="w-full flex items-center justify-between p-3.5 rounded-xl bg-[#0D1320] hover:bg-[#161F30] border border-[#1F2937] text-left cursor-pointer shadow-sm active:scale-98 transition-all"
               >
                 <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-xl bg-white/10 border border-white/20 flex items-center justify-center shrink-0">
+                  <div className="w-9 h-9 rounded-lg bg-[#111827] border border-[#1F2937] flex items-center justify-center shrink-0">
                     <svg className="w-5 h-5" viewBox="0 0 24 24">
                       <path
                         fill="#EA4335"
@@ -133,15 +133,15 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
                   </div>
                   <div>
                     <div className="flex items-center gap-1.5">
-                      <span className="text-xs font-black text-white">Log in with Gmail</span>
-                      <span className="text-[9px] font-bold px-1.5 py-0.2 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
-                        OTP / Cloud
+                      <span className="text-xs font-bold text-white">Log in with Gmail</span>
+                      <span className="text-[9px] font-medium px-1.5 py-0.2 rounded bg-blue-500/20 text-blue-400">
+                        Cloud Sync
                       </span>
                     </div>
-                    <span className="text-[10px] text-slate-300">Sync journal across mobile & desktop</span>
+                    <span className="text-[10px] text-slate-400">Sync journal across devices</span>
                   </div>
                 </div>
-                <span className="text-xs font-black text-emerald-400">Sign In →</span>
+                <span className="text-xs font-bold text-blue-400">Sign In →</span>
               </button>
             )}
 
@@ -152,23 +152,23 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
                   setIsMoreOpen(false);
                   onOpenPricing();
                 }}
-                className="w-full flex items-center justify-between p-3.5 rounded-2xl bg-white/[0.05] hover:bg-white/[0.1] border border-white/10 text-left cursor-pointer shadow-md active:scale-98 transition-all"
+                className="w-full flex items-center justify-between p-3.5 rounded-xl bg-[#0D1320] hover:bg-[#161F30] border border-[#1F2937] text-left cursor-pointer shadow-sm active:scale-98 transition-all"
               >
                 <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-xl bg-white/[0.08] border border-white/10 flex items-center justify-center text-emerald-400 font-bold shrink-0">
+                  <div className="w-9 h-9 rounded-lg bg-[#111827] border border-[#1F2937] flex items-center justify-center text-slate-300 font-bold shrink-0">
                     <CreditCard className="w-5 h-5" />
                   </div>
                   <div>
                     <div className="flex items-center gap-1.5">
                       <span className="text-xs font-bold text-white">Plans & Access</span>
-                      <span className="text-[9px] font-semibold px-1.5 py-0.2 rounded bg-emerald-500/20 text-emerald-300">
-                        UPI / QR
+                      <span className="text-[9px] font-medium px-1.5 py-0.2 rounded bg-emerald-500/20 text-emerald-400">
+                        Pro
                       </span>
                     </div>
-                    <span className="text-[10px] text-slate-400">Upgrade to Pro • Instant QR & Invoice</span>
+                    <span className="text-[10px] text-slate-400">Upgrade to Pro</span>
                   </div>
                 </div>
-                <span className="text-xs font-bold text-emerald-400">Pay →</span>
+                <span className="text-xs font-bold text-slate-300">View →</span>
               </button>
             )}
 
@@ -179,14 +179,14 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
                   setIsMoreOpen(false);
                   onOpenCommandPalette();
                 }}
-                className="flex items-center justify-center gap-2 py-2.5 px-3 rounded-2xl bg-white/[0.05] border border-white/10 text-xs font-bold text-slate-200"
+                className="flex items-center justify-center gap-2 py-2.5 px-3 rounded-lg bg-[#0D1320] hover:bg-[#161F30] border border-[#1F2937] text-xs font-semibold text-slate-200"
               >
-                <Search className="w-3.5 h-3.5 text-emerald-400" />
+                <Search className="w-3.5 h-3.5 text-blue-400" />
                 <span>Search (⌘K)</span>
               </button>
               <button
                 onClick={toggleTheme}
-                className="flex items-center justify-center gap-2 py-2.5 px-3 rounded-2xl bg-white/[0.05] border border-white/10 text-xs font-bold text-slate-200"
+                className="flex items-center justify-center gap-2 py-2.5 px-3 rounded-lg bg-[#0D1320] hover:bg-[#161F30] border border-[#1F2937] text-xs font-semibold text-slate-200"
               >
                 {theme === 'dark' ? (
                   <>
@@ -195,7 +195,7 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
                   </>
                 ) : (
                   <>
-                    <Moon className="w-3.5 h-3.5 text-indigo-400" />
+                    <Moon className="w-3.5 h-3.5 text-blue-400" />
                     <span>Dark Mode</span>
                   </>
                 )}
@@ -215,29 +215,29 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
                     <button
                       key={item.id}
                       onClick={() => handleSelectTab(item.id)}
-                      className={`w-full flex items-center justify-between p-3 rounded-2xl text-left transition-all ${
+                      className={`w-full flex items-center justify-between p-3 rounded-lg text-left transition-all ${
                         isActive
-                          ? 'bg-emerald-500/15 border border-emerald-500/30 text-emerald-300'
-                          : 'bg-white/[0.02] hover:bg-white/[0.06] border border-white/5 text-slate-300'
+                          ? 'bg-blue-600/15 border border-blue-500/30 text-blue-300'
+                          : 'bg-[#0D1320] hover:bg-[#161F30] border border-[#1F2937] text-slate-300'
                       }`}
                     >
                       <div className="flex items-center gap-3">
                         <div
-                          className={`w-8 h-8 rounded-xl flex items-center justify-center ${
+                          className={`w-8 h-8 rounded-md flex items-center justify-center ${
                             isActive
-                              ? 'bg-emerald-500/20 text-emerald-400'
-                              : 'bg-white/5 text-slate-400'
+                              ? 'bg-blue-500/20 text-blue-400'
+                              : 'bg-[#111827] text-slate-400'
                           }`}
                         >
                           <Icon className="w-4 h-4" />
                         </div>
                         <div>
-                          <span className="text-xs font-bold block text-white">{item.label}</span>
+                          <span className="text-xs font-semibold block text-white">{item.label}</span>
                           <span className="text-[10px] text-slate-400">{item.desc}</span>
                         </div>
                       </div>
                       {item.badge && (
-                        <span className="text-[9px] font-bold px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
+                        <span className="text-[9px] font-medium px-2 py-0.5 rounded bg-[#111827] text-slate-400 border border-[#1F2937]">
                           {item.badge}
                         </span>
                       )}
@@ -253,16 +253,16 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
                 setIsMoreOpen(false);
                 onOpenAIAssistant();
               }}
-              className="w-full flex items-center justify-between p-3 rounded-2xl bg-gradient-to-r from-indigo-600/30 via-purple-600/20 to-emerald-600/20 border border-indigo-500/30 text-left cursor-pointer"
+              className="w-full flex items-center justify-between p-3 rounded-lg bg-[#0D1320] hover:bg-[#161F30] border border-[#1F2937] text-left cursor-pointer"
             >
               <div className="flex items-center gap-2.5">
-                <Sparkles className="w-4 h-4 text-indigo-400" />
+                <Sparkles className="w-4 h-4 text-blue-400" />
                 <div>
-                  <span className="text-xs font-black text-white block">AI Trading Copilot</span>
-                  <span className="text-[10px] text-slate-300">Live risk guardian & thesis reviewer</span>
+                  <span className="text-xs font-semibold text-white block">AI Trading Assistant</span>
+                  <span className="text-[10px] text-slate-400">Risk analysis & trade reviewer</span>
                 </div>
               </div>
-              <span className="text-[10px] font-bold text-indigo-300 uppercase tracking-wider">Open</span>
+              <span className="text-[10px] font-semibold text-blue-400 uppercase tracking-wider">Open</span>
             </button>
           </div>
         </div>
@@ -271,7 +271,7 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
       {/* Main Sticky Bottom Navigation Bar for Mobile */}
       <nav
         aria-label="Mobile navigation"
-        className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-[#070A12]/95 backdrop-blur-2xl border-t border-white/10 px-2 py-2 flex items-center justify-around shadow-2xl safe-bottom"
+        className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-[#090D16]/95 backdrop-blur-lg border-t border-[#1F2937] px-2 py-2 flex items-center justify-around shadow-2xl safe-bottom"
       >
         {primaryItems.map((item) => {
           const Icon = item.icon;
@@ -280,16 +280,16 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
             <button
               key={item.id}
               onClick={() => handleSelectTab(item.id)}
-              className={`relative flex flex-col items-center gap-1 py-1 px-3 rounded-2xl text-[10px] font-bold transition-all cursor-pointer ${
+              className={`relative flex flex-col items-center gap-1 py-1 px-3 rounded-lg text-[10px] font-semibold transition-all cursor-pointer ${
                 isActive
-                  ? 'text-emerald-400 scale-105'
+                  ? 'text-blue-400'
                   : 'text-slate-400 hover:text-slate-200'
               }`}
             >
-              <Icon className={`w-4 h-4 ${isActive ? 'text-emerald-400 stroke-[2.5]' : 'text-slate-400'}`} />
+              <Icon className={`w-4 h-4 ${isActive ? 'text-blue-400 stroke-[2.2]' : 'text-slate-400'}`} />
               <span className="leading-tight">{item.label}</span>
               {isActive && (
-                <span className="absolute -bottom-1 w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-sm shadow-emerald-400" />
+                <span className="absolute -bottom-1 w-1 h-1 rounded-full bg-blue-400" />
               )}
             </button>
           );
@@ -298,16 +298,16 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
         {/* "More" Trigger */}
         <button
           onClick={() => setIsMoreOpen(true)}
-          className={`relative flex flex-col items-center gap-1 py-1 px-3 rounded-2xl text-[10px] font-bold transition-all cursor-pointer ${
+          className={`relative flex flex-col items-center gap-1 py-1 px-3 rounded-lg text-[10px] font-semibold transition-all cursor-pointer ${
             isMoreOpen || !primaryItems.some((p) => p.id === activeTab)
-              ? 'text-indigo-400 scale-105'
+              ? 'text-blue-400'
               : 'text-slate-400 hover:text-slate-200'
           }`}
         >
           <Menu className="w-4 h-4 text-slate-400" />
           <span className="leading-tight">More</span>
           {!primaryItems.some((p) => p.id === activeTab) && (
-            <span className="absolute -bottom-1 w-1.5 h-1.5 rounded-full bg-indigo-400 shadow-sm shadow-indigo-400" />
+            <span className="absolute -bottom-1 w-1 h-1 rounded-full bg-blue-400" />
           )}
         </button>
       </nav>
