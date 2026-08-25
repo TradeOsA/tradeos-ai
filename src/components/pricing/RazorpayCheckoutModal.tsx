@@ -23,6 +23,7 @@ export interface RazorpayCheckoutModalProps {
   billingCycle: 'MONTHLY' | 'ANNUAL';
   paymentDetails: PriceConversion;
   onSuccess: (paymentId: string) => void;
+  userId?: string;
   userEmail?: string;
   userName?: string;
 }
@@ -35,6 +36,7 @@ export const RazorpayCheckoutModal: React.FC<RazorpayCheckoutModalProps> = ({
   billingCycle,
   paymentDetails,
   onSuccess,
+  userId = 'trader_primary',
   userEmail = 'trader@tradeos.ai',
   userName = 'Trader',
 }) => {
@@ -91,7 +93,7 @@ export const RazorpayCheckoutModal: React.FC<RazorpayCheckoutModalProps> = ({
       }
 
       // 2. Call Backend API to create Razorpay Order ID
-      const orderRes = await fetch('/api/v1/payments/create-order', {
+      let orderRes = await fetch('/api/v1/payments/create-order', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -99,17 +101,34 @@ export const RazorpayCheckoutModal: React.FC<RazorpayCheckoutModalProps> = ({
           currency: paymentDetails.currency,
           tier,
           billingCycle,
-          userId: 'trader_primary',
+          userId,
           userEmail,
           gateway: 'RAZORPAY',
         }),
       });
 
+      // Fallback to /api/create-order if /api/v1 prefix is not routed
       if (!orderRes.ok) {
-        throw new Error('Failed to create payment session. Please try again.');
+        orderRes = await fetch('/api/create-order', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            amount: paymentDetails.rawAmount,
+            currency: paymentDetails.currency,
+            tier,
+            billingCycle,
+            userId,
+            userEmail,
+          }),
+        });
+      }
+
+      if (!orderRes.ok) {
+        throw new Error('Failed to create payment session. Please check your network connection and try again.');
       }
 
       const orderData = await orderRes.json();
+      console.log('[Razorpay Client] Order response received:', orderData);
       const dynamicKey = getRazorpayKeyId();
       const activeKeyId = dynamicKey || orderData.keyId || 'rzp_test_tradeos_sandbox';
 

@@ -36,11 +36,85 @@ process.on('unhandledRejection', (reason: any) => {
 const app = express();
 const PORT = 3000;
 
+// Universal CORS Middleware for Netlify frontend & cross-origin deployment integration
+app.use((req: Request, res: Response, next) => {
+  const origin = req.headers.origin || '*';
+  res.setHeader('Access-Control-Allow-Origin', origin);
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
+  res.setHeader(
+    'Access-Control-Allow-Headers',
+    'Origin, X-Requested-With, Content-Type, Accept, Authorization, x-razorpay-signature, X-Razorpay-Signature, stripe-signature, x-webhook-signature, x-webhook-timestamp, x-client-platform'
+  );
+  res.setHeader('Access-Control-Allow-Credentials', 'true');
+  res.setHeader('Access-Control-Max-Age', '86400'); // 24 hours preflight cache
+
+  // Handle browser preflight immediately
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
+  }
+  next();
+});
+
 app.use(express.json({ limit: '35mb' }));
 app.use(express.urlencoded({ extended: true, limit: '35mb' }));
 
 // Mount high-throughput v1 Algorithmic Microservices API Router
 app.use('/api/v1', apiV1Router);
+
+// Direct alias for Razorpay Order Creation (e.g. /api/create-order & /api/payments/create-order)
+import { createRazorpayOrderSession, getRazorpayCredentials } from './server/payments/razorpayService.js';
+
+app.post(['/api/create-order', '/api/payments/create-order', '/api/payments/razorpay/create-order'], async (req: Request, res: Response) => {
+  try {
+    const {
+      amount,
+      currency = 'INR',
+      receipt,
+      notes,
+      tier = 'PRO',
+      billingCycle = 'ANNUAL',
+      userId = 'trader_primary',
+      userEmail = 'trader@tradeos.ai',
+      merchantKeyId,
+      merchantKeySecret,
+    } = req.body || {};
+
+    const result = await createRazorpayOrderSession({
+      amount,
+      currency,
+      receipt,
+      notes,
+      tier,
+      billingCycle,
+      userId,
+      userEmail,
+      merchantKeyId,
+      merchantKeySecret,
+    });
+
+    res.json(result);
+  } catch (error: any) {
+    console.error('[API Create-Order Route Error]:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to create payment session',
+      error: error?.message || 'Unknown order creation error',
+      logs: [`[${new Date().toISOString()}] Server exception: ${error?.message || error}`],
+    });
+  }
+});
+
+// Direct alias for Razorpay Payment Config (Public Key Exposer)
+app.get(['/api/payments/config', '/api/razorpay-config'], (req: Request, res: Response) => {
+  const creds = getRazorpayCredentials();
+  res.json({
+    success: true,
+    keyId: creds.keyId || 'rzp_test_tradeos_sandbox',
+    isConfigured: creds.isConfigured,
+    isTestMode: creds.isTestMode,
+    source: creds.source,
+  });
+});
 
 // Direct alias for Razorpay Payment Link Creation (handles iFrame / standalone fallback)
 app.post('/api/create-payment-link', async (req: Request, res: Response) => {

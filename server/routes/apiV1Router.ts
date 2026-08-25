@@ -5,6 +5,7 @@ import { encryptSecret, decryptSecret, maskApiKey } from '../security/encryption
 import { wsManager } from '../streaming/websocketEngine.js';
 import { processRazorpayWebhook, processCashfreeWebhook, processStripeWebhook, getUserTier, verifyRazorpayPayment } from '../payments/webhookHandler.js';
 import { calculateGatewayAmount, USD_TO_INR_RATE, SUPPORTED_CURRENCY_RATES } from '../payments/currencyConverter.js';
+import { createRazorpayOrderSession, getRazorpayCredentials } from '../payments/razorpayService.js';
 import { generateUserToken, verifyUserToken, requireAuth, AuthenticatedRequest } from '../security/auth.js';
 import fs from 'fs';
 import path from 'path';
@@ -289,97 +290,45 @@ apiV1Router.get('/broker/secure-keys', requireAuth, (req: AuthenticatedRequest, 
 /**
  * Dynamic Multi-Currency Payment Order Creation
  * Supports INR (paise) and USD (cents) with automatic live exchange conversion for Razorpay & Stripe
- * POST /api/v1/payments/create-order
+ * POST /api/v1/payments/create-order & POST /api/v1/create-order
  */
-apiV1Router.post('/payments/create-order', async (req: Request, res: Response) => {
+apiV1Router.post(['/payments/create-order', '/create-order'], async (req: Request, res: Response) => {
   try {
     const {
-      amount = 19,
-      currency = 'USD',
+      amount = 499,
+      currency = 'INR',
       tier = 'PRO',
       billingCycle = 'ANNUAL',
       userId = 'trader_primary',
       userEmail = 'trader@tradeos.ai',
       gateway = 'RAZORPAY',
-      forceTargetCurrency,
-    } = req.body;
+      receipt,
+      notes,
+      merchantKeyId,
+      merchantKeySecret,
+    } = req.body || {};
 
-    const calc = calculateGatewayAmount(Number(amount), currency, forceTargetCurrency);
-
-    const razorpayKeyId = process.env.RAZORPAY_KEY_ID || process.env.VITE_RAZORPAY_KEY_ID || '';
-    const razorpayKeySecret = process.env.RAZORPAY_KEY_SECRET || '';
-
-    let razorpayOrder: any = null;
-
-    // If real Razorpay credentials exist, call Razorpay Orders API with fast timeout protection
-    if (razorpayKeyId && razorpayKeySecret && !razorpayKeyId.includes('sandbox') && !razorpayKeyId.includes('test_tradeos')) {
-      try {
-        const authHeader = 'Basic ' + Buffer.from(`${razorpayKeyId}:${razorpayKeySecret}`).toString('base64');
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 2500); // 2.5s fast timeout
-
-        const rzpResponse = await fetch('https://api.razorpay.com/v1/orders', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': authHeader,
-          },
-          body: JSON.stringify({
-            amount: calc.subUnits, // In paise (INR) or cents (USD)
-            currency: calc.targetCurrency,
-            receipt: `rcpt_${Date.now()}_${String(tier).toLowerCase()}`,
-            notes: {
-              userId,
-              userEmail,
-              tier,
-              billingCycle,
-              sourceAmount: calc.sourceAmount,
-              sourceCurrency: calc.sourceCurrency,
-              exchangeRate: calc.exchangeRateUsed,
-            },
-          }),
-          signal: controller.signal,
-        });
-        clearTimeout(timeoutId);
-
-        if (rzpResponse.ok) {
-          razorpayOrder = await rzpResponse.json();
-        } else {
-          const errText = await rzpResponse.text();
-          console.warn('[Razorpay Order Creation Info]: Using dynamic fallback order');
-        }
-      } catch (err: any) {
-        // Fast graceful fallback without crashing
-        console.warn('[Razorpay API Info]: Using local secure order ID generator');
-      }
-    }
-
-    const orderId = razorpayOrder?.id || `order_tos_${Date.now()}_${Math.floor(Math.random() * 100000)}`;
-
-    res.json({
-      success: true,
-      orderId,
-      amount: calc.calculatedAmount,
-      currency: calc.targetCurrency,
-      amountInSubUnits: calc.subUnits, // paise for INR, cents for USD
-      sourceAmount: calc.sourceAmount,
-      sourceCurrency: calc.sourceCurrency,
-      exchangeRateUsed: calc.exchangeRateUsed,
-      inrEquivalent: calc.inrEquivalent,
-      displayFormatted: calc.displayFormatted,
-      keyId: razorpayKeyId || 'rzp_test_tradeos_sandbox',
-      gateway,
-      notes: {
-        tier,
-        billingCycle,
-        userId,
-      },
+    const result = await createRazorpayOrderSession({
+      amount,
+      currency,
+      tier,
+      billingCycle,
+      userId,
+      userEmail,
+      receipt,
+      notes,
+      merchantKeyId,
+      merchantKeySecret,
     });
+
+    res.json(result);
   } catch (error: any) {
+    console.error('[API v1 Create-Order Error]:', error);
     res.status(500).json({
       success: false,
       message: 'Failed to create payment order',
-      error: error?.message,
+      error: error?.message || 'Unknown order creation error',
+      logs: [`[${new Date().toISOString()}] Server exception: ${error?.message || error}`],
     });
   }
 });
