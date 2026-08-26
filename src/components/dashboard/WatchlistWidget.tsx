@@ -16,11 +16,28 @@ export const WatchlistWidget: React.FC<WatchlistWidgetProps> = ({
   onSelectAsset,
   onToggleFavorite,
 }) => {
-  const [filter, setFilter] = useState<'All' | 'Crypto' | 'Stocks' | 'Forex' | 'Favorites'>('All');
+  const [filter, setFilter] = useState<'All' | 'Indian / F&O' | 'Crypto' | 'Stocks' | 'Forex' | 'Favorites'>('All');
 
   const filteredAssets = assets.filter((item) => {
     if (filter === 'Favorites') return item.isFavorite;
     if (filter === 'All') return true;
+    if (filter === 'Indian / F&O') {
+      return (
+        item.category === 'Indian Stocks / F&O' ||
+        item.symbol.includes('NIFTY') ||
+        item.symbol.includes('SENSEX') ||
+        item.symbol.includes('RELIANCE') ||
+        item.symbol.includes('HDFC') ||
+        item.symbol.includes('ICICI') ||
+        item.symbol.includes('INFY') ||
+        item.symbol.includes('TCS') ||
+        item.symbol.includes('TATA') ||
+        item.symbol.includes('SBIN')
+      );
+    }
+    if (filter === 'Stocks') {
+      return item.category === 'Stocks' || item.category === 'Indian Stocks / F&O';
+    }
     return item.category === filter;
   });
 
@@ -45,7 +62,7 @@ export const WatchlistWidget: React.FC<WatchlistWidgetProps> = ({
 
       {/* Filter Tabs */}
       <div className="flex items-center gap-1 bg-[#121827] p-1 rounded-lg border border-[#1C263C] text-[10px] overflow-x-auto scrollbar-none">
-        {(['All', 'Crypto', 'Stocks', 'Forex', 'Favorites'] as const).map((tab) => (
+        {(['All', 'Indian / F&O', 'Crypto', 'Stocks', 'Forex', 'Favorites'] as const).map((tab) => (
           <button
             key={tab}
             onClick={() => setFilter(tab)}

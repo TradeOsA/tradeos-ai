@@ -24,6 +24,7 @@ import {
   Flame,
   Key,
   Sparkles,
+  Layers,
 } from 'lucide-react';
 import { APP_CONFIG } from '../../config/branding';
 
@@ -59,6 +60,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       title: 'Trading Terminal',
       items: [
         { id: 'dashboard', label: 'Terminal', icon: LayoutDashboard, badge: 'Live', shortcut: '1' },
+        { id: 'option-chain', label: 'Option Chain', icon: Layers, badge: 'F&O', shortcut: 'O' },
         { id: 'scanner', label: 'Breakout Radar', icon: Radar, badge: 'Hot', shortcut: 'S' },
         { id: 'paper-trading', label: 'Paper Trading', icon: Wallet, badge: 'Demo', shortcut: 'P' },
         { id: 'risk-center', label: 'Risk Matrix', icon: Calculator, badge: '8 Tools', shortcut: '2' },

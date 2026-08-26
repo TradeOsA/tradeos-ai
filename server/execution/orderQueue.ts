@@ -1,6 +1,7 @@
 import { EventEmitter } from 'events';
 import { wsManager, pubsub } from '../streaming/websocketEngine.js';
 import { decryptSecret, EncryptedPayload } from '../security/encryption.js';
+import { realBrokerGateway } from './realBrokerGateway.js';
 import fs from 'fs';
 import path from 'path';
 
@@ -264,7 +265,7 @@ export class OrderExecutionQueue extends EventEmitter {
 
   /**
    * 2. REAL BROKER API EXECUTION PIPELINE
-   * Enforces broker rate-limits (10 req/s), decrypts credentials, and executes live.
+   * Enforces broker rate-limits (10 req/s), decrypts credentials, and executes live via realBrokerGateway.
    */
   private async executeLiveBrokerOrder(order: TradeOrder): Promise<void> {
     const startTime = Date.now();
@@ -274,34 +275,60 @@ export class OrderExecutionQueue extends EventEmitter {
     const rateLimitKey = `${order.userId}:${order.venue}`;
     await this.rateLimiter.acquireToken(rateLimitKey);
 
-    const cachedTick = wsManager.latestTicks.get(order.symbol);
-    const marketPrice = cachedTick?.price || order.price || 100;
+    // Read stored credentials if available
+    let creds: any = undefined;
+    try {
+      const brokerConfigFile = path.join(process.cwd(), 'broker-connections.json');
+      if (fs.existsSync(brokerConfigFile)) {
+        const savedBrokers = JSON.parse(fs.readFileSync(brokerConfigFile, 'utf-8'));
+        const matched = savedBrokers.find((b: any) => b.provider?.toUpperCase() === order.venue || b.id?.includes(order.venue.toLowerCase()));
+        if (matched) {
+          creds = {
+            apiKey: matched.apiKey,
+            apiSecret: matched.apiSecret,
+            clientId: matched.clientId,
+            accessToken: matched.accessToken || matched.apiKey,
+          };
+        }
+      }
+    } catch (e) {
+      // Ignore
+    }
 
-    // Real microstructure fill model
-    const slippage = (Math.random() * 0.0004) * (order.side === 'BUY' || order.side === 'LONG' ? 1 : -1);
-    const fillPrice = order.type === 'LIMIT' && order.price ? order.price : Number((marketPrice * (1 + slippage)).toFixed(order.symbol.includes('EUR') ? 4 : 2));
-
-    // Broker network trip simulation (8-16ms)
-    let executionDelayMs = 10;
-    if (order.venue === 'DELTA') executionDelayMs = 6;
-    else if (order.venue === 'DHAN') executionDelayMs = 8;
-    else if (order.venue === 'BINANCE') executionDelayMs = 12;
-
-    await new Promise((resolve) => setTimeout(resolve, executionDelayMs));
+    const providerName = order.venue.toLowerCase();
+    const result = await realBrokerGateway.executeOrder(
+      {
+        provider: providerName,
+        symbol: order.symbol,
+        direction: order.side,
+        quantity: order.quantity,
+        price: order.price,
+        orderType: order.type === 'LIMIT' ? 'LIMIT' : 'MARKET',
+        stopLoss: order.stopLoss,
+        takeProfit: order.takeProfit,
+      },
+      creds
+    );
 
     const totalLatency = Date.now() - startTime;
-    order.latencyMs = totalLatency;
-    order.status = 'FILLED';
-    order.fillPrice = fillPrice;
-    order.executedQuantity = order.quantity;
+    order.latencyMs = result.latencyMs || totalLatency;
+    order.status = result.success ? 'FILLED' : 'REJECTED';
+    order.fillPrice = result.executedPrice || order.price || 100;
+    order.executedQuantity = result.quantity || order.quantity;
     order.executedAt = Date.now();
-    order.brokerOrderId = `${order.venue.toLowerCase()}_live_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
+    order.brokerOrderId = result.brokerOrderId || `${order.venue.toLowerCase()}_${Date.now()}`;
+    if (!result.success) {
+      order.errorMessage = result.message;
+    }
 
     this.totalProcessedOrders++;
-    this.totalFilledOrders++;
-    this.avgLatencyMs = Number(((this.avgLatencyMs * 0.95) + (totalLatency * 0.05)).toFixed(1));
-
-    this.updatePositionOnFill(order);
+    if (result.success) {
+      this.totalFilledOrders++;
+      this.updatePositionOnFill(order);
+    } else {
+      this.totalRejectedOrders++;
+    }
+    this.avgLatencyMs = Number(((this.avgLatencyMs * 0.95) + (order.latencyMs * 0.05)).toFixed(1));
   }
 
   private updatePositionOnFill(order: TradeOrder) {

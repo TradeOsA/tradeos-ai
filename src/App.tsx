@@ -35,12 +35,15 @@ import { LegalPoliciesModal } from './components/legal/LegalPoliciesModal';
 import { BreakoutRadarView } from './components/scanner/BreakoutRadarView';
 import { PaperTradingView } from './components/paper-trading/PaperTradingView';
 import { IndianCryptoTaxView } from './components/tax/IndianCryptoTaxView';
+import { OptionChainView } from './components/option-chain/OptionChainView';
 import { TradeStoryCardModal } from './components/story-card/TradeStoryCardModal';
 import { TiltProtectionModal } from './components/tilt-lock/TiltProtectionModal';
 import { BrokerSyncModal } from './components/broker/BrokerSyncModal';
 import { TelegramAlertsModal } from './components/alerts/TelegramAlertsModal';
 import { MacroAlertsModal } from './components/alerts/MacroAlertsModal';
 import { EmergencyKillSwitchModal } from './components/risk-center/EmergencyKillSwitchModal';
+import { SebiComplianceBanner } from './components/layout/SebiComplianceBanner';
+import { WhatsAppDailyDigestModal } from './components/alerts/WhatsAppDailyDigestModal';
 import { TiltProtectionProvider, useTiltProtection } from './context/TiltProtectionContext';
 import { Footer } from './components/layout/Footer';
 import {
@@ -76,7 +79,7 @@ export default function App() {
       const path = window.location.pathname.toLowerCase();
       if (path === '/about' || path.startsWith('/about')) return 'about';
       const cleanPath = path.replace(/^\/+/, '');
-      if (cleanPath && ['dashboard', 'scanner', 'paper-trading', 'risk-center', 'tax', 'journal', 'ai-review', 'ai-coach', 'academy', 'portfolio', 'goals', 'community', 'settings', 'about'].includes(cleanPath)) {
+      if (cleanPath && ['dashboard', 'option-chain', 'scanner', 'paper-trading', 'risk-center', 'tax', 'journal', 'ai-review', 'ai-coach', 'academy', 'portfolio', 'goals', 'community', 'settings', 'about'].includes(cleanPath)) {
         return cleanPath;
       }
     }
@@ -335,6 +338,7 @@ export default function App() {
   const [isMacroAlertsOpen, setIsMacroAlertsOpen] = useState<boolean>(false);
   const [selectedMarketSegment, setSelectedMarketSegment] = useState<'ALL' | 'INDIAN' | 'CRYPTO' | 'FOREX'>('ALL');
   const [isKillSwitchModalOpen, setIsKillSwitchModalOpen] = useState<boolean>(false);
+  const [isWhatsAppDigestOpen, setIsWhatsAppDigestOpen] = useState<boolean>(false);
 
   // Emergency Kill Switch: Instant Flatten & Square-off all open trades
   const handleFlattenAllTrades = useCallback((reason: string = 'Emergency Kill Switch Triggered') => {
@@ -632,6 +636,9 @@ export default function App() {
         }}
       />
 
+      {/* SEBI Mandatory Statutory Risk & Transparency Compliance Banner */}
+      <SebiComplianceBanner onOpenDisclaimerModal={() => setIsDisclaimerOpen(true)} />
+
       {/* Global Header with Theme, Breadcrumbs, Profile, Notifications & Search */}
       <Header
         user={user}
@@ -653,6 +660,7 @@ export default function App() {
         onOpenShareModal={() => setIsShareModalOpen(true)}
         onOpenInstallApp={() => setIsInstallModalOpen(true)}
         onOpenKillSwitch={() => setIsKillSwitchModalOpen(true)}
+        onOpenWhatsAppDigest={() => setIsWhatsAppDigestOpen(true)}
         selectedMarketSegment={selectedMarketSegment}
         onSelectMarketSegment={setSelectedMarketSegment}
         disciplineScore={disciplineScore}
@@ -716,6 +724,10 @@ export default function App() {
                   onBack={handleBack}
                   onNavigateTab={navigateToTab}
                 />
+              )}
+
+              {activeTab === 'option-chain' && (
+                <OptionChainView />
               )}
 
               {activeTab === 'scanner' && (
@@ -784,6 +796,7 @@ export default function App() {
                     setTrades((prev) => [...importedTrades, ...prev]);
                   }}
                   onSaveNewTrade={handleSaveNewTrade}
+                  onOpenWhatsAppDigest={() => setIsWhatsAppDigestOpen(true)}
                   accountBalance={user.accountBalance}
                   maxDailyLossUsd={user.maxDailyLossUsd}
                   defaultRiskPercent={user.defaultRiskPercent}
@@ -1123,6 +1136,14 @@ export default function App() {
         onClose={() => setIsKillSwitchModalOpen(false)}
         openTrades={trades}
         onFlattenAllTrades={handleFlattenAllTrades}
+      />
+
+      <WhatsAppDailyDigestModal
+        isOpen={isWhatsAppDigestOpen}
+        onClose={() => setIsWhatsAppDigestOpen(false)}
+        trades={trades}
+        userName={user.name}
+        disciplineScore={disciplineScore}
       />
     </div>
   );

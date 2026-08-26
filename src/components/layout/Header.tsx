@@ -18,6 +18,7 @@ import {
   Activity,
   Key,
   Flame,
+  MessageSquare,
 } from 'lucide-react';
 import { UserProfile, MarketAsset } from '../../types';
 import { useTheme } from '../../context/ThemeContext';
@@ -41,6 +42,7 @@ interface HeaderProps {
   onOpenShareModal?: () => void;
   onOpenInstallApp?: () => void;
   onOpenKillSwitch?: () => void;
+  onOpenWhatsAppDigest?: () => void;
   selectedMarketSegment?: 'ALL' | 'INDIAN' | 'CRYPTO' | 'FOREX';
   onSelectMarketSegment?: (segment: 'ALL' | 'INDIAN' | 'CRYPTO' | 'FOREX') => void;
   assets?: MarketAsset[];
@@ -64,6 +66,7 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenAbout,
   onOpenBrokerSync,
   onOpenKillSwitch,
+  onOpenWhatsAppDigest,
   selectedMarketSegment = 'ALL',
   onSelectMarketSegment,
   disciplineScore = 88,
@@ -276,6 +279,18 @@ export const Header: React.FC<HeaderProps> = ({
               </div>
             )}
           </div>
+
+          {/* WhatsApp & Telegram Daily Digest Trigger */}
+          {onOpenWhatsAppDigest && (
+            <button
+              onClick={onOpenWhatsAppDigest}
+              className="hidden md:flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1.5 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 transition-all cursor-pointer shadow-sm group shrink-0"
+              title="Generate 1-Click WhatsApp & Telegram Daily P&L and Risk Audit"
+            >
+              <MessageSquare className="w-3.5 h-3.5 text-emerald-400" />
+              <span className="hidden xl:inline">Daily Digest</span>
+            </button>
+          )}
 
           {/* AI Copilot Drawer Trigger */}
           <button

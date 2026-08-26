@@ -23,7 +23,19 @@ interface BrokerCsvImportModalProps {
   onImportTrades: (trades: Trade[]) => void;
 }
 
-type BrokerPreset = 'AUTO' | 'ZERODHA' | 'DHAN' | 'BINANCE' | 'MT4_MT5' | 'IBKR' | 'GENERIC';
+type BrokerPreset =
+  | 'AUTO'
+  | 'ZERODHA'
+  | 'DHAN'
+  | 'ANGEL'
+  | 'GROWW'
+  | 'UPSTOX'
+  | 'FYERS'
+  | 'BINANCE'
+  | 'DELTA'
+  | 'MT4_MT5'
+  | 'IBKR'
+  | 'GENERIC';
 
 interface ParsedRow {
   id: string;
@@ -372,29 +384,74 @@ export const BrokerCsvImportModal: React.FC<BrokerCsvImportModalProps> = ({
                 <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider block mb-2">
                   Select Broker / Exchange Format
                 </label>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-2">
                   {[
-                    { id: 'AUTO', label: '⚡ Auto-Detect Any CSV', desc: 'Universal AI auto-parser' },
+                    { id: 'AUTO', label: '⚡ Auto-Detect', desc: 'AI universal parser' },
                     { id: 'ZERODHA', label: 'Zerodha Kite', desc: 'Tradebook & P&L CSV' },
-                    { id: 'DHAN', label: 'Dhan / Angel One', desc: 'Indian Equities & F&O' },
+                    { id: 'DHAN', label: 'Dhan HQ', desc: 'Orders & Trades CSV' },
+                    { id: 'ANGEL', label: 'Angel One', desc: 'SmartAPI Trade Log' },
+                    { id: 'GROWW', label: 'Groww', desc: 'Order History CSV' },
+                    { id: 'UPSTOX', label: 'Upstox', desc: 'Trade History CSV' },
+                    { id: 'FYERS', label: 'Fyers API', desc: 'Tradebook Export' },
+                    { id: 'DELTA', label: 'Delta Exchange', desc: 'Crypto F&O / Perps' },
                     { id: 'BINANCE', label: 'Binance / Bybit', desc: 'Spot & Futures CSV' },
-                    { id: 'MT4_MT5', label: 'MetaTrader 4 / 5', desc: 'Detailed trade report' },
+                    { id: 'MT4_MT5', label: 'MetaTrader 4 / 5', desc: 'EA / Manual Report' },
                     { id: 'IBKR', label: 'Interactive Brokers', desc: 'Flex query statement' },
-                    { id: 'GENERIC', label: 'Standard Template', desc: 'Pre-formatted schema' },
+                    { id: 'GENERIC', label: 'Standard CSV', desc: 'Pre-formatted schema' },
                   ].map((p) => (
                     <button
                       key={p.id}
                       onClick={() => setSelectedPreset(p.id as BrokerPreset)}
-                      className={`p-3 rounded-2xl border text-left transition-all cursor-pointer ${
+                      className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer ${
                         selectedPreset === p.id
                           ? 'bg-emerald-500/15 border-emerald-500/40 text-white shadow-sm'
                           : 'bg-[#0E1321] border-white/5 text-slate-400 hover:text-white hover:border-white/15'
                       }`}
                     >
-                      <div className="text-xs font-bold text-slate-200">{p.label}</div>
-                      <div className="text-[10px] text-slate-500 mt-0.5">{p.desc}</div>
+                      <div className="text-xs font-bold text-slate-200 truncate">{p.label}</div>
+                      <div className="text-[10px] text-slate-500 mt-0.5 truncate">{p.desc}</div>
                     </button>
                   ))}
+                </div>
+              </div>
+
+              {/* 1-Click Quick Demo Loaders */}
+              <div className="p-3 rounded-2xl bg-white/[0.03] border border-white/10 flex flex-wrap items-center justify-between gap-2">
+                <span className="text-xs text-slate-400 font-medium flex items-center gap-1.5">
+                  <Sparkles className="w-3.5 h-3.5 text-emerald-400" />
+                  <span>1-Click Test Data Importer:</span>
+                </span>
+                <div className="flex flex-wrap items-center gap-2">
+                  <button
+                    onClick={() => {
+                      const sampleZerodha = `Trade Date,Symbol,Exchange,Segment,Type,Quantity,Price,Trade Value,Order ID\n2026-08-25,NIFTY 24500 CE,NFO,OPT,BUY,50,142.50,7125,120000001\n2026-08-25,NIFTY 24500 CE,NFO,OPT,SELL,50,198.00,9900,120000002\n2026-08-25,BANKNIFTY 52000 PE,NFO,OPT,BUY,30,280.00,8400,120000003\n2026-08-25,BANKNIFTY 52000 PE,NFO,OPT,SELL,30,240.00,7200,120000004\n2026-08-25,RELIANCE,NSE,EQ,BUY,25,2950.00,73750,120000005\n2026-08-25,RELIANCE,NSE,EQ,SELL,25,3010.00,75250,120000006`;
+                      setCsvText(sampleZerodha);
+                      parseCSVContent(sampleZerodha, 'ZERODHA');
+                    }}
+                    className="px-2.5 py-1 rounded-lg bg-blue-500/15 hover:bg-blue-500/25 border border-blue-500/30 text-blue-300 text-[11px] font-semibold transition-colors cursor-pointer"
+                  >
+                    🇮🇳 Zerodha F&O Demo
+                  </button>
+                  <button
+                    onClick={() => {
+                      const sampleDhan = `CustomDate,Scrip,Action,Qty,BuyPrice,SellPrice,PnL,Segment\n2026-08-25,FINNIFTY 23000 CE,BUY,80,95.0,128.0,2640,NFO\n2026-08-25,TCS,BUY,10,4100.0,4180.0,800,NSE_EQ\n2026-08-25,HDFCBANK,BUY,20,1620.0,1595.0,-500,NSE_EQ`;
+                      setCsvText(sampleDhan);
+                      parseCSVContent(sampleDhan, 'DHAN');
+                    }}
+                    className="px-2.5 py-1 rounded-lg bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/30 text-emerald-300 text-[11px] font-semibold transition-colors cursor-pointer"
+                  >
+                    🇮🇳 Dhan / Angel One Demo
+                  </button>
+                  <button
+                    onClick={() => {
+                      const sampleBinance = `Date,Symbol,Side,EntryPrice,ExitPrice,Quantity,PnL,Strategy\n2026-08-25,BTC/USDT,LONG,64200,66800,0.45,1170,Breakout Momentum\n2026-08-25,SOL/USDT,LONG,145.2,158.4,15,198,Order Block Retest\n2026-08-25,ETH/USDT,SHORT,3480,3390,2.5,225,Fair Value Gap`;
+                      setCsvText(sampleBinance);
+                      parseCSVContent(sampleBinance, 'BINANCE');
+                    }}
+                    className="px-2.5 py-1 rounded-lg bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/30 text-amber-300 text-[11px] font-semibold transition-colors cursor-pointer"
+                  >
+                    🌐 Binance / Bybit Demo
+                  </button>
                 </div>
               </div>
 

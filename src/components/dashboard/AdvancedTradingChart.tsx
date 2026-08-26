@@ -18,15 +18,21 @@ import {
   Target,
   Sparkles,
   Tv,
-  Layers
+  Layers,
+  Radio,
+  Clock,
+  Compass
 } from 'lucide-react';
 import { MarketAsset, CandleData } from '../../types';
 import { formatAssetPrice, getAssetCurrencySymbol } from '../../utils/currencyUtils';
+import { RealTradingViewEmbed } from './RealTradingViewEmbed';
 
 interface AdvancedTradingChartProps {
   asset: MarketAsset;
   onOpenQuickTrade?: () => void;
   onSendToAIReview?: (symbol: string, currentPrice: number, screenshotDataUrl?: string) => void;
+  onSelectAssetBySymbol?: (symbol: string) => void;
+  onOpenOptionChain?: () => void;
 }
 
 type Timeframe = '1m' | '5m' | '15m' | '1H' | '4H' | '1D' | '1W';
@@ -46,35 +52,98 @@ interface DrawingItem {
   targetPrice?: number;
 }
 
-// Convert symbol to TradingView official widget symbol format
-function getTradingViewSymbol(asset: MarketAsset): string {
-  const sym = (asset.symbol || 'BTC').toUpperCase();
+// Convert symbol to TradingView official live widget symbol format (NSE, BSE, BINANCE, FX, OANDA)
+export function getTradingViewSymbol(asset: MarketAsset | string): string {
+  const raw = typeof asset === 'string' ? asset : asset.symbol || 'BTC';
+  const sym = raw.toUpperCase().trim();
+  const category = typeof asset === 'object' ? asset.category : '';
+
+  // 1. Indian Indices & Special F&O Index names (NSE & BSE)
+  if (sym === 'NIFTY 50' || sym === 'NIFTY' || sym === '^NSEI' || sym === 'NSE:NIFTY') return 'NSE:NIFTY';
+  if (sym === 'BANKNIFTY' || sym === 'BANK NIFTY' || sym === '^NSEBANK' || sym === 'NSE:BANKNIFTY') return 'NSE:BANKNIFTY';
+  if (sym === 'FINNIFTY' || sym === 'FIN NIFTY' || sym === 'NSE:FINNIFTY') return 'NSE:FINNIFTY';
+  if (sym === 'MIDCPNIFTY' || sym === 'MIDCAP NIFTY' || sym === 'NSE:MIDCPNIFTY') return 'NSE:MIDCPNIFTY';
+  if (sym === 'SENSEX' || sym === 'BSE SENSEX' || sym === '^BSESN' || sym === 'BSE:SENSEX') return 'BSE:SENSEX';
+  if (sym === 'BANKEX' || sym === 'BSE:BANKEX') return 'BSE:BANKEX';
+
+  // 2. Indian High-Volume Equities (NSE/BSE)
+  if (sym.includes('RELIANCE')) return 'NSE:RELIANCE';
+  if (sym.includes('HDFCBANK')) return 'NSE:HDFCBANK';
+  if (sym.includes('ICICIBANK')) return 'NSE:ICICIBANK';
+  if (sym.includes('INFY') || sym.includes('INFOSYS')) return 'NSE:INFY';
+  if (sym.includes('TCS')) return 'NSE:TCS';
+  if (sym.includes('SBIN') || sym === 'SBI') return 'NSE:SBIN';
+  if (sym.includes('TATAMOTORS') || sym.includes('TATA MOTORS')) return 'NSE:TATAMOTORS';
+  if (sym.includes('ITC')) return 'NSE:ITC';
+  if (sym.includes('BHARTIARTL') || sym.includes('AIRTEL')) return 'NSE:BHARTIARTL';
+  if (sym.includes('AXISBANK')) return 'NSE:AXISBANK';
+  if (sym.includes('KOTAKBANK')) return 'NSE:KOTAKBANK';
+  if (sym.includes('LT') || sym.includes('L&T')) return 'NSE:LT';
+  if (sym.includes('BAJFINANCE')) return 'NSE:BAJFINANCE';
+  if (sym.includes('TATASTEEL')) return 'NSE:TATASTEEL';
+  if (sym.includes('WIPRO')) return 'NSE:WIPRO';
+  if (sym.includes('MARUTI')) return 'NSE:MARUTI';
+  if (sym.includes('SUNPHARMA')) return 'NSE:SUNPHARMA';
+  if (sym.includes('TITAN')) return 'NSE:TITAN';
+  if (sym.includes('ASIANPAINT')) return 'NSE:ASIANPAINT';
+  if (category === 'Indian Stocks / F&O') return `NSE:${sym.replace(/[^A-Z0-9]/g, '')}`;
+
+  // 3. Crypto (24x7 Binance Live Stream)
   if (sym.includes('BTC')) return 'BINANCE:BTCUSDT';
   if (sym.includes('ETH')) return 'BINANCE:ETHUSDT';
   if (sym.includes('SOL')) return 'BINANCE:SOLUSDT';
   if (sym.includes('BNB')) return 'BINANCE:BNBUSDT';
   if (sym.includes('XRP')) return 'BINANCE:XRPUSDT';
+  if (sym.includes('DOGE')) return 'BINANCE:DOGEUSDT';
+  if (sym.includes('ADA')) return 'BINANCE:ADAUSDT';
+  if (category === 'Crypto') return `BINANCE:${sym.replace(/[^A-Z0-9]/g, '')}USDT`;
+
+  // 4. Forex & Macro Currencies
   if (sym.includes('EUR') || sym.includes('EURUSD')) return 'FX:EURUSD';
   if (sym.includes('GBP') || sym.includes('GBPUSD')) return 'FX:GBPUSD';
   if (sym.includes('JPY') || sym.includes('USDJPY')) return 'FX:USDJPY';
+  if (sym.includes('INR') || sym.includes('USDINR')) return 'FX_IDC:USDINR';
+  if (sym.includes('AUD') || sym.includes('AUDUSD')) return 'FX:AUDUSD';
+
+  // 5. Commodities & Global Futures
   if (sym.includes('GOLD') || sym.includes('XAU')) return 'OANDA:XAUUSD';
-  if (sym.includes('OIL') || sym.includes('BRENT') || sym.includes('WTI')) return 'TVC:USOIL';
-  if (sym.includes('NIFTY') && !sym.includes('BANK')) return 'NSE:NIFTY';
-  if (sym.includes('BANKNIFTY')) return 'NSE:BANKNIFTY';
-  if (sym.includes('RELIANCE')) return 'NSE:RELIANCE';
-  if (sym.includes('HDFCBANK')) return 'NSE:HDFCBANK';
+  if (sym.includes('OIL') || sym.includes('BRENT') || sym.includes('WTI') || sym.includes('USOIL')) return 'TVC:USOIL';
+  if (sym.includes('ES1') || sym.includes('SPX') || sym.includes('SPY')) return 'AMEX:SPY';
+  if (sym.includes('NQ1') || sym.includes('NDX') || sym.includes('QQQ')) return 'NASDAQ:QQQ';
+
+  // 6. US Tech Stocks
+  if (sym.includes('NVDA')) return 'NASDAQ:NVDA';
   if (sym.includes('AAPL')) return 'NASDAQ:AAPL';
   if (sym.includes('TSLA')) return 'NASDAQ:TSLA';
-  if (sym.includes('NVDA')) return 'NASDAQ:NVDA';
-  if (asset.category === 'Crypto') return `BINANCE:${sym.replace(/[^A-Z0-9]/g, '')}USDT`;
-  if (asset.category === 'Indian Stocks / F&O') return `NSE:${sym.replace(/[^A-Z0-9]/g, '')}`;
+  if (sym.includes('MSFT')) return 'NASDAQ:MSFT';
+  if (sym.includes('AMZN')) return 'NASDAQ:AMZN';
+
   return `BINANCE:BTCUSDT`;
 }
+
+const QUICK_INDIAN_SYMBOLS = [
+  { label: 'NIFTY 50', symbol: 'NIFTY 50', tvSymbol: 'NSE:NIFTY', flag: '🇮🇳' },
+  { label: 'BANKNIFTY', symbol: 'BANKNIFTY', tvSymbol: 'NSE:BANKNIFTY', flag: '🇮🇳' },
+  { label: 'FINNIFTY', symbol: 'FINNIFTY', tvSymbol: 'NSE:FINNIFTY', flag: '🇮🇳' },
+  { label: 'SENSEX', symbol: 'SENSEX', tvSymbol: 'BSE:SENSEX', flag: '🇮🇳' },
+  { label: 'RELIANCE', symbol: 'RELIANCE', tvSymbol: 'NSE:RELIANCE', flag: '🇮🇳' },
+  { label: 'HDFCBANK', symbol: 'HDFCBANK', tvSymbol: 'NSE:HDFCBANK', flag: '🇮🇳' },
+  { label: 'ICICIBANK', symbol: 'ICICIBANK', tvSymbol: 'NSE:ICICIBANK', flag: '🇮🇳' },
+  { label: 'INFY', symbol: 'INFY', tvSymbol: 'NSE:INFY', flag: '🇮🇳' },
+  { label: 'TCS', symbol: 'TCS', tvSymbol: 'NSE:TCS', flag: '🇮🇳' },
+  { label: 'TATAMOTORS', symbol: 'TATAMOTORS', tvSymbol: 'NSE:TATAMOTORS', flag: '🇮🇳' },
+  { label: 'BTC/USDT', symbol: 'BTC/USDT', tvSymbol: 'BINANCE:BTCUSDT', flag: '🌐' },
+  { label: 'ETH/USDT', symbol: 'ETH/USDT', tvSymbol: 'BINANCE:ETHUSDT', flag: '🌐' },
+  { label: 'GOLD (XAU)', symbol: 'XAU/USD', tvSymbol: 'OANDA:XAUUSD', flag: '🥇' },
+  { label: 'CRUDE OIL', symbol: 'USOIL', tvSymbol: 'TVC:USOIL', flag: '🛢️' },
+];
 
 export const AdvancedTradingChart: React.FC<AdvancedTradingChartProps> = ({
   asset,
   onOpenQuickTrade,
   onSendToAIReview,
+  onSelectAssetBySymbol,
+  onOpenOptionChain,
 }) => {
   const [chartEngine, setChartEngine] = useState<ChartEngine>('tradingview');
   const [timeframe, setTimeframe] = useState<Timeframe>('15m');
@@ -259,6 +328,54 @@ export const AdvancedTradingChart: React.FC<AdvancedTradingChartProps> = ({
         setWsConnected(false);
       }
     } else {
+      // Connect to TradeOS Unified 100ms Level-3 Multiplexed Feed for Indian Equities, Indices, Forex, & Commodities
+      try {
+        const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+        const serverWsUrl = `${protocol}//${window.location.host}/ws/stream`;
+        ws = new WebSocket(serverWsUrl);
+
+        ws.onopen = () => {
+          setWsConnected(true);
+          ws?.send(JSON.stringify({
+            action: 'SUBSCRIBE',
+            channels: ['market:ticks:all', 'market:ticks:indian', 'market:ticks:forex'],
+          }));
+        };
+
+        ws.onmessage = (event) => {
+          try {
+            const msg = JSON.parse(event.data);
+            if (msg.type === 'TICK' && msg.data) {
+              const tick = msg.data;
+              const cleanA = asset.symbol.replace(/[^A-Z0-9]/g, '').toUpperCase();
+              const cleanT = (tick.symbol || '').replace(/[^A-Z0-9]/g, '').toUpperCase();
+              if (cleanA === cleanT || asset.symbol === tick.symbol) {
+                handleNewPriceTick(tick.price, Math.floor(Math.random() * 8 + 2));
+              }
+            } else if (msg.type === 'BATCH_TICKS' && Array.isArray(msg.data)) {
+              const cleanA = asset.symbol.replace(/[^A-Z0-9]/g, '').toUpperCase();
+              const matched = msg.data.find((t: any) => {
+                const cleanT = (t.symbol || '').replace(/[^A-Z0-9]/g, '').toUpperCase();
+                return cleanA === cleanT || asset.symbol === t.symbol;
+              });
+              if (matched && matched.price > 0) {
+                handleNewPriceTick(matched.price, Math.floor(Math.random() * 8 + 2));
+              }
+            }
+          } catch {}
+        };
+
+        ws.onerror = () => {
+          setWsConnected(false);
+        };
+
+        ws.onclose = () => {
+          setWsConnected(false);
+        };
+      } catch {
+        setWsConnected(false);
+      }
+
       fallbackTickInterval = setInterval(() => {
         const base = livePriceRef.current || asset.price;
         const volatilityPct = 0.00003; // Micro-pip change
@@ -657,6 +774,19 @@ export const AdvancedTradingChart: React.FC<AdvancedTradingChartProps> = ({
             </div>
           </div>
 
+          {/* Live Option Chain Button */}
+          {onOpenOptionChain && (
+            <button
+              id="chart-option-chain-btn"
+              onClick={onOpenOptionChain}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-cyan-500/15 hover:bg-cyan-500/25 border border-cyan-500/30 text-cyan-300 text-xs font-bold shadow-sm transition-all cursor-pointer active:scale-95"
+              title="Open Live F&O Option Chain & Greeks"
+            >
+              <Layers className="w-3.5 h-3.5 text-cyan-400" />
+              <span>Option Chain</span>
+            </button>
+          )}
+
           {/* AI Auditor Snapshot Button */}
           <button
             id="chart-send-ai-btn"
@@ -695,6 +825,33 @@ export const AdvancedTradingChart: React.FC<AdvancedTradingChartProps> = ({
             <span>{isFullscreen ? 'Minimize (Esc)' : 'Fullscreen'}</span>
           </button>
         </div>
+      </div>
+
+      {/* Quick Indian & Global Market Selector Strip */}
+      <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none text-xs border-b border-[#1C263C] pt-1">
+        <span className="text-[10px] uppercase font-bold text-slate-500 flex items-center gap-1 shrink-0 mr-1">
+          <Compass className="w-3 h-3 text-cyan-400" />
+          <span>Quick Market:</span>
+        </span>
+        {QUICK_INDIAN_SYMBOLS.map((item) => {
+          const isSelected =
+            asset.symbol === item.symbol ||
+            getTradingViewSymbol(asset) === item.tvSymbol;
+          return (
+            <button
+              key={item.symbol}
+              onClick={() => onSelectAssetBySymbol?.(item.symbol)}
+              className={`flex items-center gap-1 px-2.5 py-1 rounded-lg font-bold whitespace-nowrap transition-all cursor-pointer text-[11px] ${
+                isSelected
+                  ? 'bg-gradient-to-r from-emerald-500/30 to-cyan-500/30 text-emerald-300 border border-emerald-500/50 shadow-sm'
+                  : 'bg-[#121827] text-slate-400 hover:text-slate-200 hover:bg-[#182236] border border-[#1C263C]'
+              }`}
+            >
+              <span>{item.flag}</span>
+              <span>{item.label}</span>
+            </button>
+          );
+        })}
       </div>
 
       {/* Chart Toolbar: Engine Switcher, Timeframes, Drawing Tools & Zoom */}
@@ -953,14 +1110,14 @@ export const AdvancedTradingChart: React.FC<AdvancedTradingChartProps> = ({
       {/* Main Chart Stage: TradingView Real-Time vs Pro Interactive Canvas */}
       <div className={`relative w-full overflow-hidden my-1.5 select-none ${isFullscreen ? 'flex-1 min-h-[560px]' : ''}`}>
         {chartEngine === 'tradingview' ? (
-          <div className={`w-full ${isFullscreen ? 'h-[calc(100vh-170px)] min-h-[560px]' : 'h-[540px]'} rounded-xl overflow-hidden bg-[#0E131F] border border-[#1C263C] relative shadow-xl`}>
-            <iframe
-              id="tradingview-live-frame"
+          <div className={`w-full ${isFullscreen ? 'h-[calc(100vh-170px)] min-h-[560px]' : 'h-[560px]'} rounded-xl overflow-hidden bg-[#0E131F] border border-[#1C263C] relative shadow-xl`}>
+            <RealTradingViewEmbed
               key={`${tvSymbol}_${tvInterval}`}
-              src={tvEmbedUrl}
-              title={`TradingView Chart ${asset.symbol}`}
-              className="w-full h-full border-0"
-              allow="fullscreen"
+              symbol={tvSymbol}
+              interval={tvInterval}
+              theme="dark"
+              height={isFullscreen ? '100%' : 560}
+              allowSymbolChange={true}
             />
           </div>
         ) : isLoadingCandles && candles.length === 0 ? (

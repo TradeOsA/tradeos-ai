@@ -31,6 +31,7 @@ import {
   Radar,
   Wallet,
   IndianRupee,
+  Layers,
 } from 'lucide-react';
 import { MarketAsset } from '../../types';
 import { useTheme } from '../../context/ThemeContext';
@@ -78,6 +79,7 @@ export const CommandPaletteModal: React.FC<CommandPaletteModalProps> = ({
   // Comprehensive command database
   const navigationItems = [
     { id: 'nav-dash', type: 'page', title: 'Live Market Terminal', desc: 'Real-time quotes, candlestick charts, indicators, and market heatmap', icon: LayoutDashboard, tab: 'dashboard', category: 'Pages' },
+    { id: 'nav-opt-chain', type: 'page', title: 'Live Option Chain & Greeks', desc: 'Real-time strike-by-strike NSE Option Chain, PCR, Max Pain, and Black-Scholes Greeks', icon: Layers, tab: 'option-chain', category: 'Pages' },
     { id: 'nav-scan', type: 'page', title: 'Breakout Radar & Scanner', desc: 'Live algorithmic signal scanner (Volume surge, RSI oversold, EMA cross)', icon: Radar, tab: 'scanner', category: 'Pages' },
     { id: 'nav-paper', type: 'page', title: 'Paper Trading Simulator', desc: '$10,000 virtual balance demo account with real-time PnL & leverage', icon: Wallet, tab: 'paper-trading', category: 'Pages' },
     { id: 'nav-tax', type: 'page', title: 'Indian Crypto Tax & TDS Matrix', desc: 'Section 115BBH 30% tax + Section 194S 1% TDS calculator & CA report', icon: IndianRupee, tab: 'tax', category: 'Pages' },

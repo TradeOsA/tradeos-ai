@@ -27,6 +27,7 @@ import {
   RotateCcw,
   Check,
   AlertTriangle,
+  MessageSquare,
 } from 'lucide-react';
 import { Trade, MarketCategory, TradeStatus, TradingStrategy } from '../../types';
 import { PageHeader } from '../layout/PageHeader';
@@ -49,6 +50,7 @@ interface JournalViewProps {
   onLoadSampleTrades?: () => void;
   onImportTrades?: (importedTrades: Trade[]) => void;
   onSaveNewTrade?: (newTrade: Trade) => void;
+  onOpenWhatsAppDigest?: () => void;
   accountBalance?: number;
   maxDailyLossUsd?: number;
   defaultRiskPercent?: number;
@@ -68,6 +70,7 @@ export const JournalView: React.FC<JournalViewProps> = ({
   onLoadSampleTrades,
   onImportTrades,
   onSaveNewTrade,
+  onOpenWhatsAppDigest,
   accountBalance = 25000,
   maxDailyLossUsd = 500,
   defaultRiskPercent = 1.0,
@@ -249,6 +252,16 @@ export const JournalView: React.FC<JournalViewProps> = ({
               <Upload className="w-3.5 h-3.5 text-emerald-400" />
               <span>Import Broker CSV</span>
             </button>
+            {onOpenWhatsAppDigest && (
+              <button
+                onClick={onOpenWhatsAppDigest}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/30 text-xs font-bold text-emerald-300 transition-all cursor-pointer active:scale-95"
+                title="Send today's P&L and risk audit to WhatsApp or Telegram"
+              >
+                <MessageSquare className="w-3.5 h-3.5 text-emerald-400" />
+                <span>WhatsApp Digest</span>
+              </button>
+            )}
             <button
               onClick={() => setIsExecutiveReportOpen(true)}
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-purple-500/15 hover:bg-purple-500/25 border border-purple-500/30 text-xs font-bold text-purple-300 transition-all cursor-pointer active:scale-95"

@@ -50,48 +50,54 @@ export const PricingModal: React.FC<PricingModalProps> = ({
   // Pricing Matrix based on currency and cycle
   const prices = {
     INR: {
-      PRO_MONTHLY: 499,
-      PRO_ANNUAL: 399,
-      INST_MONTHLY: 1499,
-      INST_ANNUAL: 1199,
+      PRO_MONTHLY: 999,
+      PRO_ANNUAL: 416, // 4999 / 12 ~ 416/mo (Total ₹4,999/yr)
+      INST_MONTHLY: 2499,
+      INST_ANNUAL: 1083, // 12,999 / 12 ~ 1083/mo
       symbol: '₹',
     },
     USD: {
-      PRO_MONTHLY: 19,
-      PRO_ANNUAL: 14,
-      INST_MONTHLY: 49,
-      INST_ANNUAL: 39,
+      PRO_MONTHLY: 12,
+      PRO_ANNUAL: 5, // ~ $60/yr
+      INST_MONTHLY: 29,
+      INST_ANNUAL: 13,
       symbol: '$',
     },
     EUR: {
-      PRO_MONTHLY: 18,
-      PRO_ANNUAL: 13,
-      INST_MONTHLY: 46,
-      INST_ANNUAL: 36,
+      PRO_MONTHLY: 11,
+      PRO_ANNUAL: 5,
+      INST_MONTHLY: 27,
+      INST_ANNUAL: 12,
       symbol: '€',
     },
     GBP: {
-      PRO_MONTHLY: 15,
-      PRO_ANNUAL: 11,
-      INST_MONTHLY: 39,
-      INST_ANNUAL: 29,
+      PRO_MONTHLY: 9,
+      PRO_ANNUAL: 4,
+      INST_MONTHLY: 23,
+      INST_ANNUAL: 10,
       symbol: '£',
     },
     AED: {
-      PRO_MONTHLY: 69,
-      PRO_ANNUAL: 52,
-      INST_MONTHLY: 179,
-      INST_ANNUAL: 139,
+      PRO_MONTHLY: 45,
+      PRO_ANNUAL: 19,
+      INST_MONTHLY: 109,
+      INST_ANNUAL: 49,
       symbol: 'AED ',
     },
   };
 
-  const currRates = prices[currency] || prices.USD;
+  const currRates = prices[currency] || prices.INR;
 
   const getNumericalAmount = (tier: 'PRO' | 'INSTITUTIONAL') => {
     if (tier === 'PRO') {
+      if (currency === 'INR') {
+        return billingCycle === 'ANNUAL' ? 4999 : 999;
+      }
       return billingCycle === 'ANNUAL' ? currRates.PRO_ANNUAL * 12 : currRates.PRO_MONTHLY;
     } else {
+      if (currency === 'INR') {
+        return billingCycle === 'ANNUAL' ? 12999 : 2499;
+      }
       return billingCycle === 'ANNUAL' ? currRates.INST_ANNUAL * 12 : currRates.INST_MONTHLY;
     }
   };
@@ -304,7 +310,7 @@ export const PricingModal: React.FC<PricingModalProps> = ({
                 >
                   <span>Annual</span>
                   <span className="px-1.5 py-0.5 rounded bg-emerald-500/20 !text-emerald-300 text-[10px] font-bold">
-                    -25%
+                    Save 58% (₹4,999/yr)
                   </span>
                 </button>
               </div>
@@ -440,6 +446,14 @@ export const PricingModal: React.FC<PricingModalProps> = ({
                   <p className="text-[11px] !text-slate-400">Zero wait automated provisioning</p>
                 </div>
               </div>
+            </div>
+
+            {/* Statutory Regulatory Notice */}
+            <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-[10.5px] text-slate-300 leading-relaxed">
+              <span className="font-bold text-amber-300 mr-1">⚖️ Non-Advisory Software Notice:</span>
+              <span>
+                TradeOS AI subscriptions are for software tools, automated trade journaling, risk calculations, and educational backtesting. We do not provide financial advice, tips, or investment management. Cancel anytime.
+              </span>
             </div>
           </div>
 

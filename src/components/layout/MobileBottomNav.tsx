@@ -23,6 +23,7 @@ import {
   IndianRupee,
   CreditCard,
   QrCode,
+  Layers,
 } from 'lucide-react';
 import { useTheme } from '../../context/ThemeContext';
 
@@ -57,6 +58,7 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
   ];
 
   const secondaryItems = [
+    { id: 'option-chain', label: 'Option Chain & Greeks', icon: Layers, badge: 'F&O Live', desc: 'NSE/BSE strike-by-strike OI & Black-Scholes Greeks' },
     { id: 'scanner', label: 'Breakout Radar', icon: Radar, badge: 'Live Radar', desc: 'Realtime breakout scanner & signals' },
     { id: 'paper-trading', label: 'Paper Trading', icon: Wallet, badge: '$10K Demo', desc: 'Zero risk virtual trading simulator' },
     { id: 'tax', label: 'Crypto Tax & TDS', icon: IndianRupee, badge: '30% + 1%', desc: 'Indian Section 115BBH & 194S matrix' },

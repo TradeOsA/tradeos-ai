@@ -78,6 +78,17 @@ export const Footer: React.FC<FooterProps> = ({
           </div>
         </div>
 
+        {/* SEBI Compliance & Risk Statement */}
+        <div className="p-3.5 rounded-2xl bg-white/[0.02] border border-white/5 text-[11px] text-slate-400 space-y-1.5 leading-relaxed">
+          <div className="flex items-center gap-1.5 font-bold text-amber-400">
+            <Scale className="w-3.5 h-3.5 text-amber-400" />
+            <span>SEBI Statutory Compliance & Non-Advisory Notice:</span>
+          </div>
+          <p>
+            TradeOS AI is an analytics workspace, journaling software, and mathematical risk management calculator for self-directed traders. We do <strong>NOT</strong> provide stock tips, investment advice, portfolio management services (PMS), or guaranteed return schemes. As per SEBI study findings, 9 out of 10 individual traders in equity Futures and Options (F&O) incurred net losses. Trading in financial markets involves substantial risk of capital loss. Past performance does not guarantee future results.
+          </p>
+        </div>
+
         {/* Copyright & All Rights Reserved Line */}
         <div className="pt-4 border-t border-white/5 flex flex-col sm:flex-row items-center justify-between gap-3 text-center sm:text-left text-[11px] text-slate-500">
           <p>

@@ -8,6 +8,7 @@ import { CryptoDominanceWidget } from './CryptoDominanceWidget';
 import { EconomicCalendarWidget } from './EconomicCalendarWidget';
 import { AIMarketDigestCard } from './AIMarketDigestCard';
 import { DailyChecklistCard } from './DailyChecklistCard';
+import { TradingViewTickerTape } from './TradingViewTickerTape';
 import { PageHeader } from '../layout/PageHeader';
 import {
   MarketAsset,
@@ -141,6 +142,44 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
     }
   };
 
+  const handleSelectAssetBySymbol = (symbol: string) => {
+    const normalized = symbol.trim().toLowerCase();
+    const found = assets.find(
+      (a) =>
+        a.symbol.toLowerCase() === normalized ||
+        a.symbol.toLowerCase().replace(/[^a-z0-9]/g, '') === normalized.replace(/[^a-z0-9]/g, '') ||
+        a.name.toLowerCase().includes(normalized)
+    );
+    if (found) {
+      onSelectAsset(found);
+    } else {
+      const isIndian =
+        symbol.includes('NIFTY') ||
+        symbol.includes('SENSEX') ||
+        symbol.includes('RELIANCE') ||
+        symbol.includes('HDFC') ||
+        symbol.includes('ICICI') ||
+        symbol.includes('INFY') ||
+        symbol.includes('TCS') ||
+        symbol.includes('TATA') ||
+        symbol.includes('SBIN');
+      const newAsset: MarketAsset = {
+        symbol,
+        name: symbol,
+        category: isIndian ? ('Indian Stocks / F&O' as const) : ('Crypto' as const),
+        price: symbol.includes('NIFTY 50') ? 24850.4 : symbol.includes('BANK') ? 52340.8 : 2500,
+        change24h: 0.85,
+        change24hAmount: 20.5,
+        high24h: 2510,
+        low24h: 2470,
+        volume24h: '₹5,200 Cr',
+        sparkline: [2470, 2480, 2490, 2500],
+        candles: [],
+      };
+      onSelectAsset(newAsset);
+    }
+  };
+
   return (
     <div id="dashboard-view-main" className="space-y-6 pb-16">
       {/* Universal Page Header */}
@@ -210,6 +249,9 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           </div>
         }
       />
+
+      {/* Real Live TradingView Ticker Tape Stream */}
+      <TradingViewTickerTape />
 
       {/* Institutional Performance KPI Strip */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -308,6 +350,8 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             asset={selectedAsset}
             onOpenQuickTrade={() => onOpenNewTradeWithAsset(selectedAsset)}
             onSendToAIReview={onSendToAIReviewFromChart}
+            onSelectAssetBySymbol={handleSelectAssetBySymbol}
+            onOpenOptionChain={() => setActiveTab('option-chain')}
           />
         </div>
         <div className="lg:col-span-1">

@@ -11,6 +11,8 @@ import {
   getLiveFearGreedIndex,
   getLiveEconomicCalendar,
   getLiveMarketNews,
+  getLiveOptionChain,
+  getIndianMarketStatus,
   getServerTelegramConfig,
   saveServerTelegramConfig,
   getSentinelStatus,
@@ -18,9 +20,11 @@ import {
   startMarketSentinelWorker,
   sendTestMacroAlert,
 } from './server/marketService.js';
+import { realBrokerGateway } from './server/execution/realBrokerGateway.js';
 import { apiV1Router } from './server/routes/apiV1Router.js';
 import { wsManager } from './server/streaming/websocketEngine.js';
 import { executeEmergencyKillSwitch } from './server/risk/killSwitchEngine.js';
+import { trailingStopLossEngine } from './server/risk/trailingStopLossEngine.js';
 
 dotenv.config();
 
@@ -217,6 +221,29 @@ app.get('/api/market/quotes', async (req: Request, res: Response) => {
   } catch (error: any) {
     console.error('Error fetching live quotes:', error);
     res.status(500).json({ success: false, error: 'Failed to fetch live quotes' });
+  }
+});
+
+// 1B. Real-Time Indian Market & F&O Live Option Chain (Nifty, BankNifty, Sensex, Equities)
+app.get('/api/market/option-chain', async (req: Request, res: Response) => {
+  try {
+    const symbol = (req.query.symbol as string) || 'NIFTY';
+    const expiry = (req.query.expiry as string) || undefined;
+    const data = await getLiveOptionChain(symbol, expiry);
+    res.json({ success: true, data });
+  } catch (error: any) {
+    console.error('Error fetching live option chain:', error);
+    res.status(500).json({ success: false, error: 'Failed to fetch option chain data' });
+  }
+});
+
+// 1C. Live Indian Market Session Status (NSE / BSE 09:15 - 15:30 IST)
+app.get('/api/market/indian-status', (req: Request, res: Response) => {
+  try {
+    const status = getIndianMarketStatus();
+    res.json({ success: true, ...status });
+  } catch (error: any) {
+    res.status(500).json({ success: false, error: 'Failed to get market status' });
   }
 });
 
@@ -1317,6 +1344,8 @@ app.post('/api/broker/execute-order', async (req: Request, res: Response) => {
       marginUsed,
       apiKey,
       apiSecret,
+      clientId,
+      accessToken,
       isAmo = false,
     } = req.body || {};
 
@@ -1327,16 +1356,48 @@ app.post('/api/broker/execute-order', async (req: Request, res: Response) => {
       });
     }
 
+    // Look up persisted credentials from broker-connections.json if not passed in body
+    let effectiveCreds = { apiKey, apiSecret, clientId, accessToken };
+    try {
+      if (fs.existsSync(BROKER_CONFIG_FILE)) {
+        const savedBrokers = JSON.parse(fs.readFileSync(BROKER_CONFIG_FILE, 'utf-8'));
+        const matched = savedBrokers.find((b: any) => b.provider === provider || b.id?.includes(provider));
+        if (matched) {
+          effectiveCreds = {
+            apiKey: apiKey || matched.apiKey,
+            apiSecret: apiSecret || matched.apiSecret,
+            clientId: clientId || matched.clientId,
+            accessToken: accessToken || matched.accessToken || matched.apiKey,
+          };
+        }
+      }
+    } catch (e) {
+      // Continue with provided credentials
+    }
+
+    // Route order via Real Broker Gateway (Dhan HQ / Delta Exchange / Binance / Angel One)
+    const gatewayResult = await realBrokerGateway.executeOrder(
+      {
+        provider,
+        symbol,
+        direction,
+        quantity,
+        price,
+        orderType,
+        stopLoss,
+        takeProfit,
+        leverage,
+        category,
+      },
+      effectiveCreds
+    );
+
     const isIndian = [
       'zerodha',
       'dhan',
       'angelone',
       'upstox',
       'fyers',
-      '5paisa',
-      'aliceblue',
-      'kotakneo',
-      'shoonya',
     ].includes(provider) || (symbol && (
       symbol.toUpperCase().includes('NIFTY') ||
       symbol.toUpperCase().includes('SENSEX') ||
@@ -1346,16 +1407,11 @@ app.post('/api/broker/execute-order', async (req: Request, res: Response) => {
     ));
 
     const indianSession = getIndianMarketSessionStatus();
-
     const isDelta = provider === 'delta';
-    const isCrypto = isDelta || ['binance', 'bybit', 'kucoin', 'okx'].includes(provider);
-
-    const orderId = `${provider.toUpperCase()}-ORD-${Date.now()}-${Math.floor(Math.random() * 10000)}`;
-    const executionLatencyMs = isDelta ? 4 : isIndian ? 8 : 12;
-    const executedPrice = price || (direction === 'LONG' ? 67850 : 67800);
+    const isCrypto = isDelta || ['binance', 'bybit'].includes(provider);
 
     const exchangeDisplayName = isDelta
-      ? 'Delta Exchange (India & Global F&O / Futures)'
+      ? 'Delta Exchange (India & Global F&O / Perpetuals)'
       : provider === 'dhan'
       ? 'DhanHQ SuperFast API v2 (NSE/BSE)'
       : provider === 'zerodha'
@@ -1369,26 +1425,49 @@ app.post('/api/broker/execute-order', async (req: Request, res: Response) => {
       : provider.toUpperCase();
 
     const currency = isIndian ? 'INR' : 'USDT';
+    const executedPrice = gatewayResult.executedPrice || price || (direction === 'LONG' ? 67850 : 67800);
 
     // Check Indian Market Working Hours (09:15 AM - 03:30 PM IST Mon-Fri)
-    let orderStatus = orderType === 'MARKET' ? 'FILLED' : 'OPEN';
+    let orderStatus = gatewayResult.status;
     let executionNote = '';
 
-    if (isIndian && !indianSession.isOpen) {
-      // If outside Indian working hours, queue as AMO (After Market Order)
+    if (isIndian && !indianSession.isOpen && orderStatus !== 'REJECTED') {
       orderStatus = 'AMO_QUEUED';
-      executionNote = ` [AMO - After Market Order]: NSE/BSE is currently closed (${indianSession.currentIstTime}). Working hours are 09:15 AM to 03:30 PM IST. Order is registered and queued for execution at 09:15 AM IST market open.`;
+      executionNote = ` [AMO - After Market Order]: NSE/BSE is currently closed (${indianSession.currentIstTime}). Working hours are 09:15 AM to 03:30 PM IST. Order registered for execution at 09:15 AM IST market open.`;
+    }
+
+    // Auto-register server-side Trailing Stop Loss if configured on order
+    let trailingItem = null;
+    if (gatewayResult.success && trailingStopDistance && Number(trailingStopDistance) > 0) {
+      try {
+        trailingItem = trailingStopLossEngine.registerTrailingStop({
+          userId: 'default_user',
+          positionId: gatewayResult.orderId,
+          provider: provider || 'dhan',
+          symbol,
+          direction: direction || 'LONG',
+          quantity: gatewayResult.quantity || quantity,
+          entryPrice: executedPrice,
+          activeStopPrice: stopLoss || (direction === 'LONG' || direction === 'BUY' ? executedPrice - Number(trailingStopDistance) : executedPrice + Number(trailingStopDistance)),
+          trailDistance: Number(trailingStopDistance),
+          brokerOrderId: gatewayResult.brokerOrderId,
+          targetTakeProfit: takeProfit || undefined,
+        });
+      } catch (tslErr) {
+        console.warn('Could not register initial Trailing SL:', tslErr);
+      }
     }
 
     res.json({
-      success: true,
-      orderId,
+      success: gatewayResult.success,
+      orderId: gatewayResult.orderId,
+      brokerOrderId: gatewayResult.brokerOrderId,
       provider,
       exchange: exchangeDisplayName,
       symbol,
       category: category || (isIndian ? 'Indian Stocks / F&O' : isCrypto ? 'Crypto' : 'Forex'),
       direction,
-      quantity,
+      quantity: gatewayResult.quantity || quantity,
       orderType,
       status: orderStatus,
       isAmo: orderStatus === 'AMO_QUEUED' || Boolean(isAmo),
@@ -1397,14 +1476,14 @@ app.post('/api/broker/execute-order', async (req: Request, res: Response) => {
       stopLoss: stopLoss || null,
       takeProfit: takeProfit || null,
       trailingStopDistance: trailingStopDistance || null,
+      trailingStopItem: trailingItem,
       leverage,
       currency,
       marginUsed: marginUsed || (executedPrice * quantity) / leverage,
-      fillLatencyMs: executionLatencyMs,
-      timestamp: new Date().toISOString(),
-      message: orderStatus === 'AMO_QUEUED'
-        ? `📋 AMO Queued on ${exchangeDisplayName} for ${symbol}!${executionNote}`
-        : `⚡ Instant Order ${orderType === 'MARKET' ? 'Filled' : 'Placed'} on ${exchangeDisplayName}! Execution Latency: ${executionLatencyMs}ms. Linked SL: ${stopLoss ? (currency === 'INR' ? `₹${stopLoss}` : `$${stopLoss}`) : 'None'} | TP: ${takeProfit ? (currency === 'INR' ? `₹${takeProfit}` : `$${takeProfit}`) : 'None'}.`,
+      fillLatencyMs: gatewayResult.latencyMs,
+      timestamp: gatewayResult.timestamp,
+      message: gatewayResult.message + (executionNote ? `\n${executionNote}` : ''),
+      rawResponse: gatewayResult.rawResponse,
     });
   } catch (err: any) {
     console.error('Error executing live order:', err);
@@ -1418,8 +1497,26 @@ app.post('/api/broker/execute-order', async (req: Request, res: Response) => {
 // Direct Modify Active Position (Update SL, TP, Trailing Stop on Broker)
 app.post('/api/broker/modify-position', async (req: Request, res: Response) => {
   try {
-    const { provider, positionId, symbol, stopLoss, takeProfit, trailingStopDistance } = req.body || {};
+    const { provider, positionId, symbol, stopLoss, takeProfit, trailingStopDistance, entryPrice, direction, quantity } = req.body || {};
     const latency = provider === 'delta' ? 4 : 7;
+
+    // Dynamically register or update Trailing SL if distance is provided
+    let trailingItem = null;
+    if (trailingStopDistance !== undefined && Number(trailingStopDistance) > 0) {
+      trailingItem = trailingStopLossEngine.registerTrailingStop({
+        userId: 'default_user',
+        positionId: positionId || `pos_${Date.now()}`,
+        provider: provider || 'dhan',
+        symbol: symbol || 'BTC/USDT',
+        direction: direction || 'LONG',
+        quantity: quantity || 1,
+        entryPrice: entryPrice || (stopLoss ? stopLoss * 1.01 : 100),
+        activeStopPrice: stopLoss || 0,
+        trailDistance: Number(trailingStopDistance),
+        targetTakeProfit: takeProfit || undefined,
+      });
+    }
+
     res.json({
       success: true,
       positionId,
@@ -1427,6 +1524,7 @@ app.post('/api/broker/modify-position', async (req: Request, res: Response) => {
       stopLoss: stopLoss !== undefined ? stopLoss : null,
       takeProfit: takeProfit !== undefined ? takeProfit : null,
       trailingStopDistance: trailingStopDistance !== undefined ? trailingStopDistance : null,
+      trailingItem,
       latencyMs: latency,
       updatedAt: new Date().toISOString(),
       message: `✅ Broker Position Risk Updated for ${symbol}: SL & TP synchronized on exchange with ${latency}ms latency.`,
@@ -1434,6 +1532,44 @@ app.post('/api/broker/modify-position', async (req: Request, res: Response) => {
   } catch (err: any) {
     console.error('Error modifying broker position:', err);
     res.status(500).json({ success: false, error: 'Failed to modify position risk on broker.' });
+  }
+});
+
+// Server-Side Autonomous Trailing Stop-Loss Engine Endpoints
+app.post('/api/risk/trailing-stop/register', (req: Request, res: Response) => {
+  try {
+    const item = trailingStopLossEngine.registerTrailingStop(req.body);
+    res.json({ success: true, item, message: `🎯 Trailing Stop-Loss active for ${item.symbol} on ${item.provider.toUpperCase()} @ ${item.activeStopPrice}` });
+  } catch (e: any) {
+    res.status(500).json({ success: false, error: e.message });
+  }
+});
+
+app.post('/api/risk/trailing-stop/cancel', (req: Request, res: Response) => {
+  try {
+    const { id } = req.body;
+    const ok = trailingStopLossEngine.cancelTrailingStop(id);
+    res.json({ success: ok, message: ok ? 'Trailing SL cancelled' : 'Not found' });
+  } catch (e: any) {
+    res.status(500).json({ success: false, error: e.message });
+  }
+});
+
+app.get('/api/risk/trailing-stop/list', (req: Request, res: Response) => {
+  try {
+    const items = trailingStopLossEngine.getActiveTrailingStops();
+    const telemetry = trailingStopLossEngine.getTelemetry();
+    res.json({ success: true, items, telemetry });
+  } catch (e: any) {
+    res.status(500).json({ success: false, error: e.message });
+  }
+});
+
+app.get('/api/risk/trailing-stop/telemetry', (req: Request, res: Response) => {
+  try {
+    res.json({ success: true, telemetry: trailingStopLossEngine.getTelemetry() });
+  } catch (e: any) {
+    res.status(500).json({ success: false, error: e.message });
   }
 });
 
