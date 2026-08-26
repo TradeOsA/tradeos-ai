@@ -82,14 +82,14 @@ export const AutoTradeConfigModal: React.FC<AutoTradeConfigModalProps> = ({
             <div>
               <div className="flex items-center gap-2">
                 <h3 className="font-black text-white text-base sm:text-lg">
-                  Sentinel Auto-Trader Logic & Risk Engine
+                  Paper Trading Automated Backtester & Live Signal Engine
                 </h3>
                 <span className="px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
-                  Quantitative SL/TP
+                  Virtual Forward-Tester
                 </span>
               </div>
               <p className="text-xs text-slate-400">
-                Automate paper trade executions directly from bot alerts with mathematical precision.
+                Automate paper strategy executions from live bot signals with mathematical SL/TP and zero real-money risk.
               </p>
             </div>
           </div>

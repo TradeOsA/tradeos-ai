@@ -91,7 +91,9 @@ export const AICoachView: React.FC<AICoachViewProps> = ({
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          message: `${query}\n\n[Persona Directive: ${personaPrompt} | User Capital: $${user.accountBalance} | Risk: ${user.defaultRiskPercent}%]`,
+          message: query,
+          persona: coachPersona === 'risk-officer' ? 'guardian' : coachPersona === 'smc-mentor' ? 'smc' : 'psychology',
+          userProfile: user,
           history: historyPayload,
         }),
       });

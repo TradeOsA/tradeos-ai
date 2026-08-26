@@ -60,13 +60,22 @@ export const AIAssistantDrawer: React.FC<AIAssistantDrawerProps> = ({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isOpen, onClose]);
 
-  const quickPrompts = [
-    `Analyze ${selectedAsset?.symbol || 'NIFTY 50'} market structure`,
-    `Calculate 1% risk for $${userProfile.accountBalance || 25000} account`,
-    'Explain SMC Order Blocks & Liquidity Sweeps',
-    'Help me reset after 2 consecutive losses',
-    `What is the invalidation level for ${selectedAsset?.symbol || 'BTC/USDT'}?`,
-  ];
+  const isIndianAsset = selectedAsset?.category === 'Indian Stocks / F&O' || /nifty|sensex|banknifty|finnifty/i.test(selectedAsset?.symbol || '');
+  const assetSym = selectedAsset?.symbol || (isIndianAsset ? 'NIFTY 50' : 'BTC/USDT');
+
+  const quickPrompts = isIndianAsset
+    ? [
+        `${assetSym} (65/20 lot) exact risk aur SL calculation batao`,
+        `${assetSym} ka SMC Order Block aur Demand Zone kya hai?`,
+        `${assetSym} ka Invalidation level aur Target kya hai?`,
+        '2 consecutive losses ke baad emotional reset checklist',
+      ]
+    : [
+        `${assetSym} fractional lot (0.01 - 0.20 BTC) position size math`,
+        `${assetSym} key Demand Zone and Order Block analysis`,
+        `${assetSym} hard Invalidation and SL level`,
+        'Help me reset after 2 consecutive losses',
+      ];
 
   const handleCopy = (id: string, text: string) => {
     navigator.clipboard.writeText(text);

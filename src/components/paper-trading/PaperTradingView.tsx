@@ -2121,7 +2121,7 @@ export const PaperTradingView: React.FC<PaperTradingViewProps> = ({
                 <div>
                   <div className="flex items-center gap-2">
                     <h3 className="font-black text-white text-base sm:text-lg tracking-tight">
-                      Sentinel Auto-Trade Execution Engine
+                      Paper Trading Automated Backtester & Live Signal Engine
                     </h3>
                     <span
                       className={`px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider ${
@@ -2130,11 +2130,11 @@ export const PaperTradingView: React.FC<PaperTradingViewProps> = ({
                           : 'bg-slate-700 text-slate-400 border border-slate-600'
                       }`}
                     >
-                      {autoTradeConfig.isEnabled ? '🟢 ACTIVE AUTOMATION' : '⚪ PAUSED'}
+                      {autoTradeConfig.isEnabled ? '🟢 ACTIVE FORWARD-TESTER' : '⚪ PAUSED'}
                     </span>
                   </div>
                   <p className="text-xs text-slate-400">
-                    Auto-executes Breakout Radar alerts with quantitative SL/TP risk management & anti-fakeout filters.
+                    Automated paper forward-tester executing Breakout Radar & SMC signals with simulated SL/TP risk management.
                   </p>
                 </div>
               </div>

@@ -77,11 +77,11 @@ export const LiveBrokerToolbar: React.FC<LiveBrokerToolbarProps> = ({
           {isLive ? (
             <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 text-[11px] font-black uppercase">
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
-              <span>Real Exchange Execution Active</span>
+              <span>Live Broker Sync & 1-Click Signals</span>
             </div>
           ) : (
             <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-teal-500/10 border border-teal-500/30 text-teal-300 text-[11px] font-bold">
-              <span>Virtual Zero-Risk Sandbox</span>
+              <span>Virtual Zero-Risk Sandbox & Paper Forward-Tester</span>
             </div>
           )}
         </div>

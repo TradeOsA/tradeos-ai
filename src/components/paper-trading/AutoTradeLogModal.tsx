@@ -73,14 +73,14 @@ export const AutoTradeLogModal: React.FC<AutoTradeLogModalProps> = ({
             <div>
               <div className="flex items-center gap-2">
                 <h3 className="font-black text-white text-base sm:text-lg">
-                  Sentinel Auto-Trade Execution Audit Log
+                  Paper Trading Automated Backtester & Signal Audit Log
                 </h3>
                 <span className="px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-teal-500/20 text-teal-300 border border-teal-500/30">
-                  Live Audit Trail
+                  Paper Audit Trail
                 </span>
               </div>
               <p className="text-xs text-slate-400">
-                Transparent mathematical log of every incoming bot signal and automated execution decision.
+                Transparent mathematical audit log of every evaluated bot signal and automated paper execution.
               </p>
             </div>
           </div>

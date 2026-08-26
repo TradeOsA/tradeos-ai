@@ -63,6 +63,17 @@ app.use((req: Request, res: Response, next) => {
 app.use(express.json({ limit: '35mb' }));
 app.use(express.urlencoded({ extended: true, limit: '35mb' }));
 
+// Standard Health Check endpoints for Cloud Run ingress and monitoring
+app.get(['/api/health', '/healthz', '/api/ping'], (req: Request, res: Response) => {
+  res.status(200).json({
+    status: 'ok',
+    service: 'TradeOS AI Server',
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime(),
+    port: PORT,
+  });
+});
+
 // Mount high-throughput v1 Algorithmic Microservices API Router
 app.use('/api/v1', apiV1Router);
 
@@ -703,6 +714,35 @@ app.post(['/api/ai/coach-chat', '/api/ai/coach'], async (req: Request, res: Resp
 
     const userAccount = userProfile || userContext || { accountBalance: 25000, defaultRiskPercent: 1, name: 'Trader' };
 
+    // Segment & Lot Size Engine Rules:
+    // NIFTY 50 = 65 shares/lot (or 75 historical)
+    // BANKNIFTY = 30 shares/lot (or 15)
+    // SENSEX = 20 (or 10) shares/lot
+    // FINNIFTY = 65 (or 25/40) shares/lot
+    // MIDCPNIFTY = 120 (or 50/75) shares/lot
+    // Crypto BTC = 0.001 / 0.01 / 0.1 BTC contracts or USDT margin
+    // Forex = standard lot (100,000 units), mini (10,000), micro (1,000)
+
+    const segmentContext = `
+[SEGMENT & INSTRUMENT SPECIFIC RULES - MUST APPLY AUTOMATICALLY]:
+1. **Indian F&O (NSE/BSE)**:
+   - Currency: Indian Rupee (₹ INR)
+   - NIFTY 50 Lot Size: 65 (or 75) quantity per lot
+   - SENSEX Lot Size: 20 (or 10) quantity per lot
+   - BANK NIFTY Lot Size: 30 (or 15) quantity per lot
+   - FINNIFTY Lot Size: 65 quantity per lot
+   - Indian Equities: Exact share quantities in ₹ INR
+   - When user asks for NIFTY, SENSEX, BANKNIFTY or Indian stocks, DO NOT use $ USD or arbitrary 25k dollar default unless the user explicitly asks in USD. If capital is not specified, assume realistic INR capital like ₹1,00,000 or ₹50,000 with 1% risk (e.g. ₹1,000 or ₹500 risk) and calculate EXACT number of LOTS (e.g., "Risk per lot = Point Difference × 65. Lots to trade = Allowed Risk ÷ Risk per lot").
+2. **Crypto Perpetual & Futures (BTC, ETH, SOL, Altcoins)**:
+   - Currency: US Dollar ($ USDT / USD)
+   - BTC/USDT: Fractional contracts (e.g. 0.01 BTC, 0.05 BTC, 0.20 BTC, 1.0 BTC)
+   - Position Sizing Formula: Position (BTC) = (Capital in $ × Risk %) / (Entry Price - Stop Loss Price)
+   - Margin & Leverage: Clearly state required margin vs position size
+3. **Forex & Commodities (EURUSD, XAUUSD / Gold, Crude Oil)**:
+   - Gold (XAUUSD): $0.10 per pip or $1 per point per 0.01 micro lot
+   - Forex Majors: Standard (1.0 = 100k), Mini (0.1 = 10k), Micro (0.01 = 1k units)
+`;
+
     // 3. Craft Persona-specific system instructions
     let personaDirective = '';
     if (persona === 'smc' || persona === 'smc-mentor') {
@@ -713,7 +753,7 @@ You analyze market structure through:
 - Institutional Order Blocks (Bullish OB / Bearish OB) and Fair Value Gaps (FVG / Imbalances).
 - Buy-Side Liquidity (BSL) & Sell-Side Liquidity (SSL) sweeps and engineered liquidity pools.
 - Premium vs Discount Pricing arrays (Fibonacci 0.618 - 0.786 OTE zones).
-When asked to analyze market structure (e.g. NIFTY 50, Bank Nifty, BTC, ETH), provide concrete, actionable technical levels based on the live price provided. Detail the exact structural bias, demand/supply zones, and liquidity sweep targets.`;
+When asked to analyze market structure (e.g. NIFTY 50, SENSEX, Bank Nifty, BTC, ETH), provide concrete, actionable technical levels based on the live price provided. Detail the exact structural bias, demand/supply zones, and liquidity sweep targets with instrument-appropriate lot sizing rules.`;
     } else if (persona === 'psychology') {
       personaDirective = `
 You are the TradeOS Elite Trading Psychologist & High-Performance Mindset Coach.
@@ -729,26 +769,32 @@ Provide empathetic, firm, structured psychological resets and step-by-step menta
 You are the TradeOS Institutional Capital Guardian & Quantitative Risk Director.
 You specialize in:
 - Non-negotiable capital protection and 1% - 2% strict risk-per-trade mathematics.
-- Exact Position Sizing formula: Position Size = (Account Capital * Risk%) / (Entry Price - Stop Loss Price).
+- Exact Position Sizing customized to the exact traded instrument:
+  * For NIFTY 50: 65 shares per lot. Number of Lots = Math.floor(Total Risk in ₹ / (Points SL × 65)).
+  * For SENSEX: 20 shares per lot. Number of Lots = Math.floor(Total Risk in ₹ / (Points SL × 20)).
+  * For BANKNIFTY: 30 shares per lot. Number of Lots = Math.floor(Total Risk in ₹ / (Points SL × 30)).
+  * For Crypto (BTCUSDT): Fractional BTC (e.g. 0.01, 0.05, 0.20 BTC).
 - Hard Structural Invalidation (where the thesis is mathematically invalidated).
 - Positive Risk-to-Reward ratio (> 1:2 R:R) and portfolio drawdown defense.
-When the user asks for analysis or risk calculation, provide clean mathematical breakdowns, entry/invalidation levels, and position sizing guidelines.`;
+When the user asks for analysis or risk calculation, provide clean mathematical breakdowns in the correct currency (₹ for Indian markets, $ for Crypto/Global) with realistic lot and contract sizes.`;
     }
 
     const systemInstruction = `
 You are TradeOS AI Copilot — an institutional-grade trading AI and capital protector.
 ${personaDirective}
 
-${assetContextStr}
-[USER CONTEXT]: Account Capital: $${userAccount.accountBalance || 25000} | Default Risk: ${userAccount.defaultRiskPercent || 1}% | User Name: ${userAccount.name || 'Trader'}
+${segmentContext}
 
-RULES FOR GENERATING RESPONSES:
-1. NEVER output generic or repetitive template loops. Answer the user's specific question directly with depth, mathematical clarity, and relevant market levels.
-2. If asked to analyze market structure for an asset (e.g., NIFTY 50, Bank Nifty, BTC, ETH, Forex), give a structured breakdown:
-   - **Market Structure & Trend Bias** (Higher Timeframe & Intraday condition)
-   - **Key Institutional Levels** (Order Block / Demand Zone, Resistance / FVG, Liquidity Targets)
-   - **Invalidation & Risk Boundary** (Exact price invalidation and 1% risk allocation)
-   - **Execution Strategy** (Confirmation triggers: wait for sweep or CHoCH)
+${assetContextStr}
+[USER CONTEXT]: Name: ${userAccount.name || 'Trader'} | Default Risk: ${userAccount.defaultRiskPercent || 1}%
+
+CRITICAL RULES FOR ACCURACY & SEGMENT COMPLIANCE:
+1. ALWAYS detect the segment the trader is asking about:
+   - If NIFTY 50, BANKNIFTY, SENSEX, or Indian stocks are discussed -> Use ₹ INR, calculate using exact NSE/BSE lot sizes (Nifty = 65 qty/lot, Sensex = 20 qty/lot, BankNifty = 30 qty/lot). DO NOT quote random 25,000 dollars for Nifty!
+   - If BTC, ETH, SOL, Crypto Futures are discussed -> Use $ USD / USDT and calculate fractional lots (e.g., 0.05 BTC, 0.20 BTC, 1.5 BTC).
+2. REAL-WORLD POSITION SIZING MATH:
+   - Always show the exact math: (Risk Capital) ÷ (Stop Loss in Points × Lot Size / Contract Multiplier).
+   - Show Maximum Loss in rupees (₹) or dollars ($), Breakeven point, and Risk-to-Reward target (minimum 1:2).
 3. If the user writes in Hindi or Hinglish, reply with clear, natural Hindi/Hinglish terms while keeping technical trading concepts clear.
 4. Keep the output clean, using clear markdown formatting, bold points, and bullet lists.
 `;
@@ -786,17 +832,32 @@ RULES FOR GENERATING RESPONSES:
       throw new Error('Fallback to dynamic technical generator');
     }
 
+    const currentSym = matchedAsset ? matchedAsset.symbol : (currentAsset || 'MARKET');
+    const isIndianSegment = /nifty|sensex|banknifty|finnifty|tcs|reliance|hdfc|infy|tatamotors|itc/i.test(currentSym) || /nifty|sensex|banknifty|finnifty|f&o|lot/i.test(lastQuery);
+
+    let suggestedQ: string[] = [];
+    if (isIndianSegment) {
+      suggestedQ = [
+        `NIFTY 50 (65 lot size) me 1% risk calculation batao`,
+        `SENSEX (20 lot size) ka demand supply zone kya hai?`,
+        `BANK NIFTY (30 lot size) ka invalidation level kya hai?`,
+        `Losing trade ke baad psychological reset kaise kare?`,
+      ];
+    } else {
+      suggestedQ = [
+        `BTC/USDT me 0.05 BTC position size calculation batao`,
+        `What is the invalidation level for ${matchedAsset?.symbol || 'BTC/USDT'}?`,
+        `Explain the liquidity sweep setup for today`,
+        `Help me reset after a losing trade`,
+      ];
+    }
+
     res.json({
       success: true,
       reply: replyText,
       persona,
       asset: matchedAsset ? matchedAsset.symbol : 'MARKET',
-      suggestedQuestions: [
-        `What is the invalidation level for ${matchedAsset?.symbol || 'NIFTY 50'}?`,
-        `Calculate 1% position size for $${userAccount.accountBalance || 25000} capital`,
-        'Explain the liquidity sweep setup for today',
-        'Help me reset after a losing trade',
-      ],
+      suggestedQuestions: suggestedQ,
     });
   } catch (error: any) {
     console.error('Error in /api/ai/coach-chat:', error);
@@ -805,49 +866,75 @@ RULES FOR GENERATING RESPONSES:
     const { messages, message, selectedAsset, currentAsset, userProfile } = req.body || {};
     const query = message || (messages && messages.length > 0 ? messages[messages.length - 1].content : 'Market Structure');
     const sym = selectedAsset?.symbol || currentAsset || 'NIFTY 50';
-    const price = selectedAsset?.price || (sym.includes('NIFTY') ? 24850 : sym.includes('BTC') ? 68500 : 2500);
+    const price = selectedAsset?.price || (sym.includes('NIFTY') ? 24850 : sym.includes('BTC') ? 68500 : sym.includes('SENSEX') ? 81500 : 2500);
     const riskPct = userProfile?.defaultRiskPercent || 1;
-    const isHindi = /[अ-ह]|kya|kaise|batao|karo|nifty/i.test(query);
+    const isHindi = /[अ-ह]|kya|kaise|batao|karo|nifty|kitna|lot/i.test(query);
+    const isNifty = /nifty/i.test(sym) || /nifty/i.test(query);
+    const isSensex = /sensex/i.test(sym) || /sensex/i.test(query);
+    const isBankNifty = /bank/i.test(sym) || /bank/i.test(query);
 
     let dynamicReply = '';
-    if (query.toLowerCase().includes('nifty') || sym.includes('NIFTY')) {
-      dynamicReply = isHindi ? `**${sym} मार्केट स्ट्रक्चर और संस्थागत (SMC) विश्लेषण (LTP: ${price}):**
+    if (isNifty) {
+      const lotSize = 65;
+      const slPoints = 40;
+      const riskPerLot = slPoints * lotSize; // 2,600
+      dynamicReply = isHindi ? `**NIFTY 50 मार्केट स्ट्रक्चर व वास्तविक लॉट साइज़ (65 Qty) रिस्क एनालिसिस (LTP: ${price}):**
 
-1. **मार्केट ट्रेंड व स्ट्रक्चर (Market Bias)**: 
-   ${sym} वर्तमान में ${price} के स्तर पर कंसोलिडेशन जोन में है। हायर टाइमफ्रेम (4H/Daily) पर ट्रेंड **Bullish Accumulation** दिखा रहा है।
+1. **मार्केट स्ट्रक्चर व ट्रेंड बायस (Market Bias)**:
+   NIFTY 50 वर्तमान में **${price}** पर ट्रेड कर रहा है। हायर टाइमफ्रेम (4H/1D) पर ट्रेंड **Bullish Structure** में है।
 
 2. **प्रमुख संस्थागत स्तर (Key Institutional Levels)**:
-   - **प्रमुख सपोर्ट (Bullish Order Block)**: ${(price * 0.992).toFixed(1)} - ${(price * 0.995).toFixed(1)} (Liquidity Pool)
-   - **रेजिस्टेंस / सप्लाई जोन (Fair Value Gap)**: ${(price * 1.008).toFixed(1)} - ${(price * 1.012).toFixed(1)}
-   - **Liquidity Sweep Target**: ${(price * 1.015).toFixed(1)}
+   - **Bullish Demand (Order Block)**: ${(price - 80).toFixed(1)} – ${(price - 40).toFixed(1)}
+   - **Supply / Fair Value Gap (FVG)**: ${(price + 90).toFixed(1)} – ${(price + 140).toFixed(1)}
+   - **Hard Invalidation (SL)**: ${(price - slPoints).toFixed(1)} (${slPoints} पॉइंट्स का स्टॉप-लॉस)
 
-3. **पूंजी सुरक्षा व इनवैलिडेशन (Capital Protection & Invalidation)**:
-   - **Invalidation Level (Hard SL)**: ${(price * 0.988).toFixed(1)} (इसके नीचे ट्रेड रद्द माना जाएगा)
-   - **रिस्क एलोकेशन**: अपने कुल कैपिटल का अधिकतम **${riskPct}%** ही रिस्क पर रखें।
-   - **एग्जीक्यूशन नियम**: रेंज के बीच में मार्केट ऑर्डर न लें; जब तक 15-मिनट कैंडल डिमांड जोन पर क्लोज न हो, एंट्री न करें।` 
-      : `**Institutional Market Structure Analysis for ${sym} (Current LTP: ${price}):**
+3. **वास्तविक NSE F&O पोजीशन साइज़िंग (Exact 65 Lot Math)**:
+   - **NIFTY Lot Size**: **65 शेयर्स प्रति लॉट**
+   - **1 लॉट पर रिस्क**: ${slPoints} पॉइंट्स × 65 = **₹${riskPerLot.toLocaleString('en-IN')}**
+   - **अनुशंसित कैपिटल नियम**: यदि आपका कुल रिस्क बजट ₹5,000 है, तो अधिकतम **1 से 2 लॉट्स (65 - 130 Qty)** ही ट्रेड करें। ओवर-क्वांटिटी लेने से बचें!`
+      : `**NIFTY 50 Institutional Market Structure & Lot Size (65 Qty) Breakdown (LTP: ${price}):**
 
-1. **Market Bias & Orderflow**:
-   Price is consolidating around **${price}**. Higher-timeframe order flow remains constructive with institutional accumulation noted above key intraday demand.
+1. **Market Bias**: Current price at **${price}**. Institutional order flow is holding key demand levels.
+2. **Key SMC Levels**:
+   - **Demand Zone (OB)**: ${(price - 80).toFixed(1)} – ${(price - 40).toFixed(1)}
+   - **Target (BSL)**: ${(price + 120).toFixed(1)}
+   - **Invalidation (SL)**: ${(price - slPoints).toFixed(1)} (${slPoints} pts)
+3. **NSE F&O Lot Size Calculation**:
+   - Lot Size: **65 units**
+   - Risk per Lot: ${slPoints} pts × 65 = **₹${riskPerLot.toLocaleString('en-IN')}** per lot.`;
+    } else if (isSensex) {
+      const lotSize = 20;
+      const slPoints = 120;
+      const riskPerLot = slPoints * lotSize; // 2,400
+      dynamicReply = isHindi ? `**SENSEX (BSE F&O) मार्केट स्ट्रक्चर व 20 लॉट साइज़ एनालिसिस (LTP: ${price}):**
 
-2. **Key Institutional Levels (SMC)**:
-   - **Demand / Bullish Order Block**: ${(price * 0.992).toFixed(1)} – ${(price * 0.995).toFixed(1)}
-   - **Supply / Fair Value Gap (FVG)**: ${(price * 1.008).toFixed(1)} – ${(price * 1.012).toFixed(1)}
-   - **External Buy-Side Liquidity (BSL)**: ${(price * 1.015).toFixed(1)}
-
-3. **Risk Boundaries & Invalidation**:
-   - **Hard Structural Invalidation**: Below ${(price * 0.988).toFixed(1)}
-   - **Capital Guardian Mandate**: Limit maximum risk to **${riskPct}%** per setup with at least a **1:2.5 Risk-to-Reward ratio**.
-   - **Execution Trigger**: Wait for liquidity sweep and Change of Character (CHoCH) on the 15m timeframe before entering.`;
-    } else {
-      dynamicReply = `**Institutional Analysis for ${sym} (LTP: ${price}):**
-
-1. **Market Structure**: Price is trading near dynamic equilibrium at **${price}**. High probability setups require waiting for clear order block mitigation.
+1. **मार्केट स्ट्रक्चर**: BSE SENSEX वर्तमान में **${price}** पर कंसोलिडेशन कर रहा है।
 2. **Key Levels**:
-   - **Immediate Support Pool**: ${(price * 0.985).toFixed(2)}
-   - **Supply Resistance**: ${(price * 1.018).toFixed(2)}
-   - **Invalidation Level**: ${(price * 0.978).toFixed(2)}
-3. **Risk Allocation**: Maintain strict **${riskPct}%** risk control. Confirm volume imbalance resolution prior to triggering execution.`;
+   - **Demand Pool**: ${(price - 220).toFixed(0)}
+   - **Resistance Target**: ${(price + 350).toFixed(0)}
+   - **Invalidation (Hard SL)**: ${(price - slPoints).toFixed(0)} (${slPoints} पॉइंट्स)
+3. **BSE SENSEX लॉट साइज़िंग गणित (20 Qty/Lot)**:
+   - **SENSEX Lot Size**: **20 शेयर्स प्रति लॉट**
+   - **1 लॉट पर रिस्क**: ${slPoints} pts × 20 = **₹${riskPerLot.toLocaleString('en-IN')}** प्रति लॉट।`
+      : `**SENSEX BSE F&O Analysis (Lot Size 20 units) - LTP: ${price}:**
+1. **Demand Zone**: ${(price - 220).toFixed(0)}
+2. **Invalidation SL**: ${(price - slPoints).toFixed(0)} (${slPoints} points)
+3. **Position Sizing**: 20 shares/lot → Risk = ₹${riskPerLot} per 1 lot.`;
+    } else {
+      dynamicReply = isHindi ? `**BTC/USDT क्रिप्टो फ्यूचर्स एनालिसिस (LTP: $${price}):**
+
+1. **मार्केट स्ट्रक्चर**: बिटकॉइन $${price} पर ट्रेड कर रहा है।
+2. **Key Levels**:
+   - **Demand Zone (Order Block)**: $${(price * 0.985).toFixed(0)}
+   - **Target (Liquidity Pool)**: $${(price * 1.025).toFixed(0)}
+   - **Invalidation (Hard SL)**: $${(price * 0.975).toFixed(0)}
+3. **क्रिप्टो कॉन्ट्रैक्ट साइज़िंग (Fractional Lots)**:
+   - $500 रिस्क पर अनुशंसित पोजीशन: **0.02 - 0.05 BTC**
+   - स्टॉप लॉस हमेशा हार्ड लिमिट में रखें।`
+      : `**BTC/USDT Crypto Futures Structure & Fractional Lot Breakdown (LTP: $${price}):**
+1. **Demand Zone**: $${(price * 0.985).toFixed(0)}
+2. **Invalidation**: $${(price * 0.975).toFixed(0)}
+3. **Contract Math**: Calculated in fractional BTC lots (e.g. 0.01 / 0.05 / 0.20 BTC).`;
     }
 
     res.json({
