@@ -4,18 +4,16 @@ import {
   Send,
   Sparkles,
   User,
-  ShieldAlert,
   Trash2,
   HelpCircle,
   Lightbulb,
-  Compass,
   CheckCircle,
   BrainCircuit,
-  Flame,
   Zap
 } from 'lucide-react';
 import { UserProfile, ChatMessage } from '../../types';
 import { PageHeader } from '../layout/PageHeader';
+import { MarkdownRenderer } from '../common/MarkdownRenderer';
 
 interface AICoachViewProps {
   user: UserProfile;
@@ -239,13 +237,17 @@ export const AICoachView: React.FC<AICoachViewProps> = ({
                 <div
                   className={`max-w-[80%] rounded-xl p-3.5 text-xs leading-relaxed ${
                     isUser
-                      ? 'bg-emerald-500/15 text-slate-100 border border-emerald-500/30'
+                      ? 'bg-emerald-500/15 text-slate-100 border border-emerald-500/30 font-medium'
                       : 'bg-[#121827] text-slate-200 border border-[#1C263C]'
                   }`}
                 >
-                  <div className="whitespace-pre-wrap">{msg.content}</div>
+                  {isUser ? (
+                    <div className="whitespace-pre-wrap">{msg.content}</div>
+                  ) : (
+                    <MarkdownRenderer content={msg.content} />
+                  )}
                   <div
-                    className={`text-[9px] mt-1 font-mono ${
+                    className={`text-[9px] mt-1.5 font-mono ${
                       isUser ? 'text-emerald-400/70 text-right' : 'text-slate-500'
                     }`}
                   >
