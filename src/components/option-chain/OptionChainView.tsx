@@ -260,12 +260,12 @@ export const OptionChainView: React.FC = () => {
       />
 
       {/* Control Bar: Underlying Selector, Expiry Dates, View Mode & Strikes Filter */}
-      <div className="bg-[#0E131F] border border-[#1C263C] rounded-2xl p-4 shadow-xl space-y-4">
+      <div className="bg-[#101520] border border-[#1C2433] rounded-xl p-3.5 shadow-sm space-y-3">
         {/* Top Underlying Selectors */}
-        <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
-          <span className="text-xs uppercase font-bold text-slate-500 shrink-0 mr-1 flex items-center gap-1">
-            <Activity className="w-3.5 h-3.5 text-cyan-400" />
-            <span>Select F&O:</span>
+        <div className="flex items-center gap-1.5 overflow-x-auto pb-0.5 scrollbar-none">
+          <span className="text-[10px] uppercase font-bold text-slate-500 shrink-0 mr-1 flex items-center gap-1">
+            <Activity className="w-3.5 h-3.5 text-blue-400" />
+            <span>F&O:</span>
           </span>
           {UNDERLYING_LIST.map((u) => {
             const isSelected = selectedSymbol === u.symbol;
@@ -273,17 +273,17 @@ export const OptionChainView: React.FC = () => {
               <button
                 key={u.symbol}
                 onClick={() => setSelectedSymbol(u.symbol)}
-                className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all cursor-pointer ${
+                className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold whitespace-nowrap transition-all cursor-pointer ${
                   isSelected
-                    ? 'bg-gradient-to-r from-cyan-500/20 to-blue-500/20 text-cyan-300 border border-cyan-500/50 shadow-md'
-                    : 'bg-[#121827] text-slate-400 hover:text-slate-200 border border-[#1C263C]'
+                    ? 'bg-blue-600 text-white shadow-sm'
+                    : 'bg-[#0D121C] text-slate-400 hover:text-slate-200 border border-[#1C2433]'
                 }`}
               >
                 <span>{u.symbol}</span>
                 {isSelected && (
                   <span
-                    className={`text-[11px] font-mono ${
-                      spotChange >= 0 ? 'text-emerald-400' : 'text-rose-400'
+                    className={`text-[10px] font-mono ${
+                      spotChange >= 0 ? 'text-emerald-300' : 'text-rose-300'
                     }`}
                   >
                     ₹{spotPrice.toLocaleString('en-IN')} ({spotChange >= 0 ? '+' : ''}
@@ -296,35 +296,35 @@ export const OptionChainView: React.FC = () => {
         </div>
 
         {/* Second Row: Expiry Selector + Spot Banner + Metrics + View Tabs */}
-        <div className="flex flex-wrap items-center justify-between gap-4 pt-2 border-t border-[#1C263C]">
+        <div className="flex flex-wrap items-center justify-between gap-3 pt-2.5 border-t border-[#1C2433]">
           {/* Expiry Selector */}
           <div className="flex items-center gap-2">
-            <label className="text-xs text-slate-400 font-medium">Expiry:</label>
+            <label className="text-[11px] text-slate-400 font-medium">Expiry:</label>
             <div className="relative">
               <select
                 value={activeExpiry}
                 onChange={(e) => setSelectedExpiry(e.target.value)}
-                className="appearance-none bg-[#121827] border border-[#1C263C] rounded-xl px-3 py-1.5 pr-8 text-xs font-semibold text-white focus:outline-none focus:border-cyan-500 cursor-pointer"
+                className="appearance-none bg-[#0D121C] border border-[#1C2433] rounded-lg px-2.5 py-1 pr-7 text-xs font-semibold text-white focus:outline-none focus:border-blue-500 cursor-pointer"
               >
                 {availableExpiries.map((exp) => (
-                  <option key={exp} value={exp} className="bg-[#0E131F]">
+                  <option key={exp} value={exp} className="bg-[#101520]">
                     {exp}
                   </option>
                 ))}
               </select>
-              <ChevronDown className="w-3.5 h-3.5 text-slate-400 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+              <ChevronDown className="w-3 h-3 text-slate-400 absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none" />
             </div>
 
             {/* Strikes View Count */}
-            <div className="flex items-center gap-1 ml-2 bg-[#121827] p-1 rounded-xl border border-[#1C263C] text-xs">
-              <span className="text-[10px] text-slate-500 px-1 font-semibold">Strikes:</span>
+            <div className="flex items-center gap-0.5 ml-1 bg-[#0D121C] p-0.5 rounded-lg border border-[#1C2433] text-xs">
+              <span className="text-[9px] text-slate-500 px-1 font-semibold">Strikes:</span>
               {[10, 15, 25].map((num) => (
                 <button
                   key={num}
                   onClick={() => setStrikeRange(num)}
-                  className={`px-2 py-0.5 rounded text-[11px] font-bold ${
+                  className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${
                     strikeRange === num
-                      ? 'bg-cyan-500 text-slate-950 shadow-sm'
+                      ? 'bg-blue-600 text-white shadow-sm'
                       : 'text-slate-400 hover:text-white'
                   }`}
                 >
@@ -334,29 +334,29 @@ export const OptionChainView: React.FC = () => {
             </div>
 
             {/* Live Auto-Refresh Rate */}
-            <div className="hidden sm:flex items-center gap-1.5 ml-2 px-2.5 py-1 rounded-xl bg-[#121827] border border-[#1C263C] text-[11px] text-slate-400">
-              <Clock className="w-3 h-3 text-cyan-400" />
+            <div className="hidden sm:flex items-center gap-1 ml-1 px-2 py-0.5 rounded-lg bg-[#0D121C] border border-[#1C2433] text-[10px] text-slate-400">
+              <Clock className="w-3 h-3 text-blue-400" />
               <span>Poll: 3s</span>
             </div>
           </div>
 
           {/* View Modes (Standard, Greeks, OI Visualizer) */}
-          <div className="flex items-center gap-1 bg-[#121827] p-1 rounded-xl border border-[#1C263C]">
+          <div className="flex items-center gap-1 bg-[#0D121C] p-0.5 rounded-lg border border-[#1C2433]">
             <button
               onClick={() => setViewMode('standard')}
-              className={`px-3 py-1 rounded-lg text-xs font-bold transition-all ${
+              className={`px-2.5 py-1 rounded-md text-xs font-bold transition-all ${
                 viewMode === 'standard'
-                  ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md'
+                  ? 'bg-blue-600 text-white shadow-sm'
                   : 'text-slate-400 hover:text-slate-200'
               }`}
             >
-              Standard Chain (OI & LTP)
+              Standard (OI & LTP)
             </button>
             <button
               onClick={() => setViewMode('greeks')}
-              className={`px-3 py-1 rounded-lg text-xs font-bold transition-all ${
+              className={`px-2.5 py-1 rounded-md text-xs font-bold transition-all ${
                 viewMode === 'greeks'
-                  ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-md'
+                  ? 'bg-purple-600 text-white shadow-sm'
                   : 'text-slate-400 hover:text-slate-200'
               }`}
             >
@@ -364,9 +364,9 @@ export const OptionChainView: React.FC = () => {
             </button>
             <button
               onClick={() => setViewMode('oi_analytics')}
-              className={`px-3 py-1 rounded-lg text-xs font-bold transition-all ${
+              className={`px-2.5 py-1 rounded-md text-xs font-bold transition-all ${
                 viewMode === 'oi_analytics'
-                  ? 'bg-emerald-500 text-slate-950 shadow-md'
+                  ? 'bg-emerald-600 text-white shadow-sm'
                   : 'text-slate-400 hover:text-slate-200'
               }`}
             >
@@ -377,40 +377,40 @@ export const OptionChainView: React.FC = () => {
       </div>
 
       {/* KPI Stats Strip: Spot, PCR, Max Pain, Total Call vs Put OI */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3.5">
         {/* Spot Price */}
-        <div className="bg-[#0E131F] border border-[#1C263C] rounded-2xl p-4 shadow-lg flex items-center justify-between">
+        <div className="bg-[#101520] border border-[#1C2433] rounded-xl p-3.5 shadow-sm flex items-center justify-between">
           <div>
-            <p className="text-xs text-slate-400 font-medium">Underlying Spot</p>
-            <h3 className="text-xl font-black text-white font-mono mt-0.5">
+            <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Underlying Spot</p>
+            <h3 className="text-lg font-black text-white font-mono mt-0.5">
               ₹{spotPrice.toLocaleString('en-IN')}
             </h3>
             <span
-              className={`text-xs font-bold flex items-center gap-0.5 mt-0.5 ${
+              className={`text-[10px] font-bold flex items-center gap-0.5 mt-0.5 ${
                 spotChange >= 0 ? 'text-emerald-400' : 'text-rose-400'
               }`}
             >
               {spotChange >= 0 ? (
-                <ArrowUpRight className="w-3.5 h-3.5" />
+                <ArrowUpRight className="w-3 h-3" />
               ) : (
-                <ArrowDownRight className="w-3.5 h-3.5" />
+                <ArrowDownRight className="w-3 h-3" />
               )}
               {spotChange >= 0 ? '+' : ''}
               {spotChangeAmount} ({spotChange}%)
             </span>
           </div>
-          <div className="w-10 h-10 rounded-xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-400">
-            <Activity className="w-5 h-5" />
+          <div className="w-8 h-8 rounded-lg bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400">
+            <Activity className="w-4 h-4" />
           </div>
         </div>
 
         {/* PCR Ratio */}
-        <div className="bg-[#0E131F] border border-[#1C263C] rounded-2xl p-4 shadow-lg flex items-center justify-between">
+        <div className="bg-[#101520] border border-[#1C2433] rounded-xl p-3.5 shadow-sm flex items-center justify-between">
           <div>
-            <p className="text-xs text-slate-400 font-medium">Put-Call Ratio (PCR)</p>
-            <h3 className="text-xl font-black text-white font-mono mt-0.5">{pcrRatio}</h3>
+            <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">PCR Ratio</p>
+            <h3 className="text-lg font-black text-white font-mono mt-0.5">{pcrRatio}</h3>
             <span
-              className={`text-xs font-bold ${
+              className={`text-[10px] font-bold ${
                 pcrRatio > 1.2
                   ? 'text-emerald-400'
                   : pcrRatio < 0.8
@@ -425,24 +425,24 @@ export const OptionChainView: React.FC = () => {
                 : 'Neutral Range'}
             </span>
           </div>
-          <div className="w-10 h-10 rounded-xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-purple-400">
-            <TrendingUp className="w-5 h-5" />
+          <div className="w-8 h-8 rounded-lg bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-purple-400">
+            <TrendingUp className="w-4 h-4" />
           </div>
         </div>
 
         {/* Max Pain */}
-        <div className="bg-[#0E131F] border border-[#1C263C] rounded-2xl p-4 shadow-lg flex items-center justify-between">
+        <div className="bg-[#101520] border border-[#1C2433] rounded-xl p-3.5 shadow-sm flex items-center justify-between">
           <div>
-            <p className="text-xs text-slate-400 font-medium">Expiry Max Pain</p>
-            <h3 className="text-xl font-black text-amber-300 font-mono mt-0.5">
+            <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Expiry Max Pain</p>
+            <h3 className="text-lg font-black text-amber-300 font-mono mt-0.5">
               ₹{maxPain.toLocaleString('en-IN')}
             </h3>
-            <span className="text-xs text-slate-500 font-medium">
-              Option Sellers Sweet Spot
+            <span className="text-[10px] text-slate-500 font-medium">
+              Option Sellers Level
             </span>
           </div>
-          <div className="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400">
-            <Shield className="w-5 h-5" />
+          <div className="w-8 h-8 rounded-lg bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400">
+            <Shield className="w-4 h-4" />
           </div>
         </div>
 

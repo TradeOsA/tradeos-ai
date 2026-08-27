@@ -32,22 +32,20 @@ interface BrokerSyncModalProps {
 }
 
 const DEFAULT_BROKERS: BrokerConnection[] = [
-  // 1. Global Crypto - Delta Exchange Top Priority
+  // 1. Global Crypto
   {
     id: 'b-delta',
     provider: 'delta',
     name: 'Delta Exchange (India & Global Perpetuals & F&O)',
     category: 'Global Crypto',
-    isConnected: true,
+    isConnected: false,
     apiKey: '',
+    apiSecret: '',
     clientId: '',
-    lastSyncedAt: 'Direct REST / WebSocket',
     syncedTradesCount: 0,
-    autoSyncEnabled: true,
-    status: 'CONNECTED',
-    latencyMs: 4,
-    accountName: 'Delta Exchange F&O & Futures Vault',
-    availableMargin: 50000,
+    autoSyncEnabled: false,
+    status: 'DISCONNECTED',
+    availableMargin: 0,
   },
   {
     id: 'b-binance',
@@ -56,9 +54,11 @@ const DEFAULT_BROKERS: BrokerConnection[] = [
     category: 'Global Crypto',
     isConnected: false,
     apiKey: '',
+    apiSecret: '',
     syncedTradesCount: 0,
     autoSyncEnabled: false,
     status: 'DISCONNECTED',
+    availableMargin: 0,
   },
   {
     id: 'b-bybit',
@@ -67,9 +67,11 @@ const DEFAULT_BROKERS: BrokerConnection[] = [
     category: 'Global Crypto',
     isConnected: false,
     apiKey: '',
+    apiSecret: '',
     syncedTradesCount: 0,
     autoSyncEnabled: false,
     status: 'DISCONNECTED',
+    availableMargin: 0,
   },
   // 2. Indian Stocks & F&O Top Real Brokers
   {
@@ -77,16 +79,13 @@ const DEFAULT_BROKERS: BrokerConnection[] = [
     provider: 'dhan',
     name: 'Dhan HQ SuperFast API v2',
     category: 'Indian Stocks / F&O',
-    isConnected: true,
+    isConnected: false,
     apiKey: '',
     clientId: '',
-    lastSyncedAt: 'Direct REST API',
     syncedTradesCount: 0,
-    autoSyncEnabled: true,
-    status: 'CONNECTED',
-    latencyMs: 8,
-    accountName: 'Dhan Trading Account',
-    availableMargin: 250000,
+    autoSyncEnabled: false,
+    status: 'DISCONNECTED',
+    availableMargin: 0,
   },
   {
     id: 'b-angel',
@@ -99,6 +98,7 @@ const DEFAULT_BROKERS: BrokerConnection[] = [
     syncedTradesCount: 0,
     autoSyncEnabled: false,
     status: 'DISCONNECTED',
+    availableMargin: 0,
   },
   {
     id: 'b-zerodha',
@@ -111,6 +111,7 @@ const DEFAULT_BROKERS: BrokerConnection[] = [
     syncedTradesCount: 0,
     autoSyncEnabled: false,
     status: 'DISCONNECTED',
+    availableMargin: 0,
   },
   {
     id: 'b-fyers',
@@ -123,6 +124,7 @@ const DEFAULT_BROKERS: BrokerConnection[] = [
     syncedTradesCount: 0,
     autoSyncEnabled: false,
     status: 'DISCONNECTED',
+    availableMargin: 0,
   },
   {
     id: 'b-upstox',
@@ -135,6 +137,7 @@ const DEFAULT_BROKERS: BrokerConnection[] = [
     syncedTradesCount: 0,
     autoSyncEnabled: false,
     status: 'DISCONNECTED',
+    availableMargin: 0,
   },
   // 3. Forex & Prop Firms
   {
@@ -142,12 +145,12 @@ const DEFAULT_BROKERS: BrokerConnection[] = [
     provider: 'metatrader',
     name: 'MetaTrader MT4 / MT5 (EA Bridge)',
     category: 'Forex & Prop Firm',
-    isConnected: true,
-    webhookSecret: 'whsec_mt5_live_bridge',
+    isConnected: false,
+    webhookSecret: '',
     syncedTradesCount: 0,
-    autoSyncEnabled: true,
-    status: 'CONNECTED',
-    latencyMs: 14,
+    autoSyncEnabled: false,
+    status: 'DISCONNECTED',
+    availableMargin: 0,
   },
 ];
 
@@ -253,12 +256,14 @@ export const BrokerSyncModal: React.FC<BrokerSyncModalProps> = ({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           provider: broker.provider,
-          apiKey: broker.apiKey || apiKeyInput,
-          apiSecret: broker.apiSecret || apiSecretInput,
+          apiKey: apiKeyInput || broker.apiKey,
+          apiSecret: apiSecretInput || broker.apiSecret,
+          clientId: clientIdInput || broker.clientId,
+          totpSecret: totpSecretInput || broker.totpSecret,
         }),
       });
       const data = await res.json();
-      if (data.success) {
+      if (data.success && data.status === 'CONNECTED') {
         setBrokers((prev) =>
           prev.map((b) =>
             b.id === broker.id
@@ -268,20 +273,38 @@ export const BrokerSyncModal: React.FC<BrokerSyncModalProps> = ({
                   status: 'CONNECTED',
                   latencyMs: data.latencyMs,
                   lastSyncedAt: 'Just now',
-                  apiKey: apiKeyInput || b.apiKey || 'live_key_auth_verified',
+                  apiKey: apiKeyInput || b.apiKey,
                   apiSecret: apiSecretInput || b.apiSecret,
                   clientId: clientIdInput || b.clientId,
                   totpSecret: totpSecretInput || b.totpSecret,
+                  availableMargin: data.availableMargin !== undefined ? data.availableMargin : b.availableMargin,
                 }
               : b
           )
         );
         setFeedbackMessage({
           type: 'success',
-          text: `🟢 ${data.providerName} connection verified! Ping latency: ${data.latencyMs}ms. All API endpoints active.`,
+          text: `🟢 ${data.providerName} connection verified! Live Ping: ${data.latencyMs}ms. Real API endpoint active.`,
         });
       } else {
-        throw new Error(data.error || 'Connection failed');
+        setBrokers((prev) =>
+          prev.map((b) =>
+            b.id === broker.id
+              ? {
+                  ...b,
+                  isConnected: false,
+                  status: data.status || 'ERROR',
+                  apiKey: apiKeyInput || b.apiKey,
+                  apiSecret: apiSecretInput || b.apiSecret,
+                  clientId: clientIdInput || b.clientId,
+                }
+              : b
+          )
+        );
+        setFeedbackMessage({
+          type: 'error',
+          text: `🔴 ${data.message || data.error || 'Connection failed: Real API credentials required.'}`,
+        });
       }
     } catch (err: any) {
       setFeedbackMessage({

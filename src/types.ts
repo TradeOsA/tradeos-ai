@@ -301,6 +301,7 @@ export interface BrokerConnection {
   isConnected: boolean;
   apiKey?: string;
   apiSecret?: string;
+  accessToken?: string;
   passphrase?: string;
   clientId?: string;
   appId?: string;

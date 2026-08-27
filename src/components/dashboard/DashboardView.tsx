@@ -254,18 +254,18 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
       <TradingViewTickerTape />
 
       {/* Institutional Performance KPI Strip */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
         {/* Discipline Score */}
-        <div className="p-4 rounded-xl bg-[#0E131F] border border-[#1C263C] flex items-center justify-between shadow-sm">
-          <div className="flex items-center gap-3.5">
-            <div className="w-10 h-10 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 font-bold">
-              <ShieldCheck className="w-5 h-5" />
+        <div className="p-3.5 rounded-xl bg-[#101520] border border-[#1C2433] flex items-center justify-between shadow-sm">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 font-bold">
+              <ShieldCheck className="w-4 h-4" />
             </div>
             <div>
-              <span className="text-[10px] text-slate-400 font-bold block uppercase tracking-wider">
+              <span className="text-[9px] text-slate-400 font-bold block uppercase tracking-wider">
                 Discipline Rating
               </span>
-              <span className="text-xl font-black text-white mono-numbers">
+              <span className="text-lg font-black text-white mono-numbers">
                 {disciplineScore}%
               </span>
             </div>
@@ -279,45 +279,45 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         </div>
 
         {/* Win Rate */}
-        <div className="p-4 rounded-xl bg-[#0E131F] border border-[#1C263C] flex items-center justify-between shadow-sm">
-          <div className="flex items-center gap-3.5">
-            <div className="w-10 h-10 rounded-lg bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400 font-bold">
-              <Target className="w-5 h-5" />
+        <div className="p-3.5 rounded-xl bg-[#101520] border border-[#1C2433] flex items-center justify-between shadow-sm">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-lg bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400 font-bold">
+              <Target className="w-4 h-4" />
             </div>
             <div>
-              <span className="text-[10px] text-slate-400 font-bold block uppercase tracking-wider">
+              <span className="text-[9px] text-slate-400 font-bold block uppercase tracking-wider">
                 Win Rate (Closed)
               </span>
-              <span className="text-xl font-black text-white mono-numbers">
+              <span className="text-lg font-black text-white mono-numbers">
                 {winRate}% <span className="text-xs text-slate-400 font-normal">({wins}/{closedTrades.length})</span>
               </span>
             </div>
           </div>
-          <span className="text-[10px] font-bold text-indigo-400 bg-indigo-500/10 px-2 py-0.5 rounded border border-indigo-500/20">
+          <span className="text-[9px] font-bold text-blue-400 bg-blue-500/10 px-2 py-0.5 rounded border border-blue-500/20">
             {closedTrades.length} Trades
           </span>
         </div>
 
         {/* Net Journal PnL */}
-        <div className="p-4 rounded-xl bg-[#0E131F] border border-[#1C263C] flex items-center justify-between shadow-sm">
-          <div className="flex items-center gap-3.5">
+        <div className="p-3.5 rounded-xl bg-[#101520] border border-[#1C2433] flex items-center justify-between shadow-sm">
+          <div className="flex items-center gap-3">
             <div
-              className={`w-10 h-10 rounded-lg flex items-center justify-center font-bold ${
+              className={`w-9 h-9 rounded-lg flex items-center justify-center font-bold ${
                 trades.length === 0
-                  ? 'bg-[#161F30] border border-[#232F46] text-slate-400'
+                  ? 'bg-[#151C2B] border border-[#1C2433] text-slate-400'
                   : netPnL >= 0
                   ? 'bg-emerald-500/10 border border-emerald-500/20 text-emerald-400'
                   : 'bg-rose-500/10 border border-rose-500/20 text-rose-400'
               }`}
             >
-              <TrendingUp className="w-5 h-5" />
+              <TrendingUp className="w-4 h-4" />
             </div>
             <div>
-              <span className="text-[10px] text-slate-400 font-bold block uppercase tracking-wider">
+              <span className="text-[9px] text-slate-400 font-bold block uppercase tracking-wider">
                 Realized Net P&L
               </span>
               <span
-                className={`text-xl font-black mono-numbers ${
+                className={`text-lg font-black mono-numbers ${
                   trades.length === 0
                     ? 'text-slate-300'
                     : netPnL >= 0
@@ -330,9 +330,9 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             </div>
           </div>
           <span
-            className={`text-[10px] font-bold px-2 py-0.5 rounded border ${
+            className={`text-[9px] font-bold px-2 py-0.5 rounded border ${
               trades.length === 0
-                ? 'bg-[#161F30] text-slate-400 border-[#232F46]'
+                ? 'bg-[#151C2B] text-slate-400 border-[#1C2433]'
                 : netPnL >= 0
                 ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
                 : 'bg-rose-500/10 text-rose-400 border-rose-500/20'
@@ -344,7 +344,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
       </div>
 
       {/* Primary Chart & Watchlist Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         <div className="lg:col-span-2">
           <AdvancedTradingChart
             asset={selectedAsset}
@@ -365,7 +365,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
       </div>
 
       {/* Market Heatmap & Crypto Dominance */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         <div className="lg:col-span-2">
           <MarketHeatmapWidget assets={filteredAssets} onSelectAsset={onSelectAsset} />
         </div>
@@ -375,85 +375,85 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
       </div>
 
       {/* Macro & AI Intelligence Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <AIMarketDigestCard news={news} selectedAsset={selectedAsset} />
         <EconomicCalendarWidget events={economicEvents} />
       </div>
 
       {/* Sentiment & Discipline Checklist Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <FearGreedGaugeWidget data={fearGreedData} />
         <DailyChecklistCard onChecklistChange={onChecklistChange} />
       </div>
 
       {/* High-Impact Workflow Shortcuts */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 pt-1">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 pt-1">
         <div
           onClick={() => setActiveTab('scanner')}
-          className="p-4 rounded-xl bg-[#0E131F] border border-[#1C263C] hover:border-emerald-500/40 transition-all cursor-pointer group flex items-center justify-between"
+          className="p-3.5 rounded-xl bg-[#101520] border border-[#1C2433] hover:border-emerald-500/40 transition-all cursor-pointer group flex items-center justify-between"
         >
           <div className="space-y-1">
-            <span className="text-xs font-bold text-emerald-400 uppercase tracking-wider flex items-center gap-1">
-              <Radar className="w-3.5 h-3.5" />
+            <span className="text-[10px] font-bold text-emerald-400 uppercase tracking-wider flex items-center gap-1">
+              <Radar className="w-3 h-3" />
               <span>Breakout Radar</span>
             </span>
-            <h4 className="text-sm font-bold text-white group-hover:text-emerald-300 transition-colors">
+            <h4 className="text-xs font-bold text-white group-hover:text-emerald-300 transition-colors">
               Algorithmic Signals
             </h4>
-            <p className="text-xs text-slate-400">Volume surge 3x, RSI oversold & EMA cross.</p>
+            <p className="text-[11px] text-slate-400">Volume surge 3x, RSI & EMA cross.</p>
           </div>
-          <ArrowUpRight className="w-5 h-5 text-slate-500 group-hover:text-emerald-400 transition-colors shrink-0 ml-3" />
+          <ArrowUpRight className="w-4 h-4 text-slate-500 group-hover:text-emerald-400 transition-colors shrink-0 ml-2" />
         </div>
 
         <div
           onClick={() => setActiveTab('paper-trading')}
-          className="p-4 rounded-xl bg-[#0E131F] border border-[#1C263C] hover:border-indigo-500/40 transition-all cursor-pointer group flex items-center justify-between"
+          className="p-3.5 rounded-xl bg-[#101520] border border-[#1C2433] hover:border-blue-500/40 transition-all cursor-pointer group flex items-center justify-between"
         >
           <div className="space-y-1">
-            <span className="text-xs font-bold text-indigo-400 uppercase tracking-wider flex items-center gap-1">
-              <Wallet className="w-3.5 h-3.5" />
+            <span className="text-[10px] font-bold text-blue-400 uppercase tracking-wider flex items-center gap-1">
+              <Wallet className="w-3 h-3" />
               <span>Paper Trading</span>
             </span>
-            <h4 className="text-sm font-bold text-white group-hover:text-indigo-300 transition-colors">
+            <h4 className="text-xs font-bold text-white group-hover:text-blue-300 transition-colors">
               $10,000 Demo Practice
             </h4>
-            <p className="text-xs text-slate-400">Live ticking PnL, realistic orders and zero risk.</p>
+            <p className="text-[11px] text-slate-400">Live ticking PnL & zero capital risk.</p>
           </div>
-          <ArrowUpRight className="w-5 h-5 text-slate-500 group-hover:text-indigo-400 transition-colors shrink-0 ml-3" />
+          <ArrowUpRight className="w-4 h-4 text-slate-500 group-hover:text-blue-400 transition-colors shrink-0 ml-2" />
         </div>
 
         <div
           onClick={() => setActiveTab('risk-center')}
-          className="p-4 rounded-xl bg-[#0E131F] border border-[#1C263C] hover:border-emerald-500/40 transition-all cursor-pointer group flex items-center justify-between"
+          className="p-3.5 rounded-xl bg-[#101520] border border-[#1C2433] hover:border-emerald-500/40 transition-all cursor-pointer group flex items-center justify-between"
         >
           <div className="space-y-1">
-            <span className="text-xs font-bold text-emerald-400 uppercase tracking-wider flex items-center gap-1">
-              <Zap className="w-3.5 h-3.5" />
+            <span className="text-[10px] font-bold text-emerald-400 uppercase tracking-wider flex items-center gap-1">
+              <Zap className="w-3 h-3" />
               <span>Risk Center</span>
             </span>
-            <h4 className="text-sm font-bold text-white group-hover:text-emerald-300 transition-colors">
+            <h4 className="text-xs font-bold text-white group-hover:text-emerald-300 transition-colors">
               Position Sizing Matrix
             </h4>
-            <p className="text-xs text-slate-400">8 financial calculators to protect capital.</p>
+            <p className="text-[11px] text-slate-400">8 financial calculators for risk.</p>
           </div>
-          <ArrowUpRight className="w-5 h-5 text-slate-500 group-hover:text-emerald-400 transition-colors shrink-0 ml-3" />
+          <ArrowUpRight className="w-4 h-4 text-slate-500 group-hover:text-emerald-400 transition-colors shrink-0 ml-2" />
         </div>
 
         <div
           onClick={() => setActiveTab('tax')}
-          className="p-4 rounded-xl bg-[#0E131F] border border-[#1C263C] hover:border-amber-500/40 transition-all cursor-pointer group flex items-center justify-between"
+          className="p-3.5 rounded-xl bg-[#101520] border border-[#1C2433] hover:border-amber-500/40 transition-all cursor-pointer group flex items-center justify-between"
         >
           <div className="space-y-1">
-            <span className="text-xs font-bold text-amber-400 uppercase tracking-wider flex items-center gap-1">
-              <IndianRupee className="w-3.5 h-3.5" />
+            <span className="text-[10px] font-bold text-amber-400 uppercase tracking-wider flex items-center gap-1">
+              <IndianRupee className="w-3 h-3" />
               <span>Crypto Tax & TDS</span>
             </span>
-            <h4 className="text-sm font-bold text-white group-hover:text-amber-300 transition-colors">
+            <h4 className="text-xs font-bold text-white group-hover:text-amber-300 transition-colors">
               30% Tax + 1% TDS
             </h4>
-            <p className="text-xs text-slate-400">Section 115BBH and 194S automated calculations.</p>
+            <p className="text-[11px] text-slate-400">Section 115BBH & 194S matrix.</p>
           </div>
-          <ArrowUpRight className="w-5 h-5 text-slate-500 group-hover:text-amber-400 transition-colors shrink-0 ml-3" />
+          <ArrowUpRight className="w-4 h-4 text-slate-500 group-hover:text-amber-400 transition-colors shrink-0 ml-2" />
         </div>
       </div>
 
@@ -461,27 +461,27 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
       {onOpenPricing && (
         <div
           onClick={onOpenPricing}
-          className="p-4 sm:p-5 rounded-xl bg-[#0E131F] border border-[#1C263C] hover:border-emerald-500/30 transition-all cursor-pointer shadow-sm group"
+          className="p-3.5 sm:p-4 rounded-xl bg-[#101520] border border-[#1C2433] hover:border-blue-500/30 transition-all cursor-pointer shadow-sm group"
         >
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-            <div className="flex items-center gap-3.5">
-              <div className="w-10 h-10 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 font-bold shrink-0">
-                <CreditCard className="w-5 h-5" />
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-lg bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400 font-bold shrink-0">
+                <CreditCard className="w-4 h-4" />
               </div>
               <div>
                 <div className="flex items-center gap-2 flex-wrap">
-                  <span className="text-xs font-semibold bg-white/[0.06] text-slate-200 border border-white/10 px-2 py-0.5 rounded">
-                    Trader Upgrade & Access
+                  <span className="text-[9px] font-bold uppercase tracking-wider bg-blue-500/15 text-blue-400 border border-blue-500/30 px-1.5 py-0.2 rounded">
+                    TRADER UPGRADE
                   </span>
                   <span className="text-xs font-medium text-emerald-400 flex items-center gap-1">
-                    <QrCode className="w-3.5 h-3.5" />
+                    <QrCode className="w-3 h-3" />
                     <span>Instant UPI QR Active</span>
                   </span>
                 </div>
-                <h3 className="text-sm sm:text-base font-bold text-white mt-1">
+                <h3 className="text-xs sm:text-sm font-bold text-white mt-0.5">
                   Unlock Unlimited AI Vision Audits, Live Scanners & Cloud Sync
                 </h3>
-                <p className="text-xs text-slate-400 max-w-xl">
+                <p className="text-[11px] text-slate-400 max-w-xl">
                   Get full lifetime institutional access with direct UPI QR payment, official GST receipt, and priority support.
                 </p>
               </div>
@@ -492,7 +492,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                 e.stopPropagation();
                 onOpenPricing();
               }}
-              className="w-full sm:w-auto px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs shadow-md transition-all cursor-pointer shrink-0 text-center"
+              className="w-full sm:w-auto px-3.5 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs shadow-md transition-all cursor-pointer shrink-0 text-center"
             >
               View Plans & Pay with UPI →
             </button>
@@ -501,14 +501,14 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
       )}
 
       {/* Non-intrusive Regulatory & Compliance Disclaimer */}
-      <div className="p-3.5 rounded-xl bg-[#0B0F19] border border-[#1A2338] flex items-center justify-between gap-3 text-slate-400 text-xs">
+      <div className="p-3 rounded-xl bg-[#0D121C] border border-[#1C2433] flex items-center justify-between gap-3 text-slate-400 text-xs">
         <div className="flex items-center gap-2">
-          <Info className="w-4 h-4 text-slate-500 shrink-0" />
-          <span>
+          <Info className="w-3.5 h-3.5 text-slate-500 shrink-0" />
+          <span className="text-[11px]">
             <strong className="text-slate-300">Regulatory Disclaimer:</strong> TradeosAi is an Analytics & Execution Routing Interface tool, <span className="text-amber-400 font-semibold">NOT a SEBI-registered advisory</span> or financial advisor. All analytics are for educational and disciplined execution purposes only.
           </span>
         </div>
-        <span className="hidden md:inline-block px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-[10px] font-bold uppercase tracking-wider shrink-0">
+        <span className="hidden md:inline-block px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-[9px] font-bold uppercase tracking-wider shrink-0">
           Compliant Interface
         </span>
       </div>

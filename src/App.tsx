@@ -39,6 +39,7 @@ import { OptionChainView } from './components/option-chain/OptionChainView';
 import { TradeStoryCardModal } from './components/story-card/TradeStoryCardModal';
 import { TiltProtectionModal } from './components/tilt-lock/TiltProtectionModal';
 import { BrokerSyncModal } from './components/broker/BrokerSyncModal';
+import { BrokersExchangesView } from './components/broker/BrokersExchangesView';
 import { TelegramAlertsModal } from './components/alerts/TelegramAlertsModal';
 import { MacroAlertsModal } from './components/alerts/MacroAlertsModal';
 import { EmergencyKillSwitchModal } from './components/risk-center/EmergencyKillSwitchModal';
@@ -79,7 +80,7 @@ export default function App() {
       const path = window.location.pathname.toLowerCase();
       if (path === '/about' || path.startsWith('/about')) return 'about';
       const cleanPath = path.replace(/^\/+/, '');
-      if (cleanPath && ['dashboard', 'option-chain', 'scanner', 'paper-trading', 'risk-center', 'tax', 'journal', 'ai-review', 'ai-coach', 'academy', 'portfolio', 'goals', 'community', 'settings', 'about'].includes(cleanPath)) {
+      if (cleanPath && ['dashboard', 'brokers', 'option-chain', 'scanner', 'paper-trading', 'risk-center', 'tax', 'journal', 'ai-review', 'ai-coach', 'academy', 'portfolio', 'goals', 'community', 'settings', 'about'].includes(cleanPath)) {
         return cleanPath;
       }
     }
@@ -723,6 +724,15 @@ export default function App() {
                   onSelectMarketSegment={setSelectedMarketSegment}
                   onBack={handleBack}
                   onNavigateTab={navigateToTab}
+                />
+              )}
+
+              {activeTab === 'brokers' && (
+                <BrokersExchangesView
+                  onImportTrades={(importedTrades) => {
+                    setTrades((prev) => [...importedTrades, ...prev]);
+                  }}
+                  onOpenPaperTrading={() => navigateToTab('paper-trading')}
                 />
               )}
 

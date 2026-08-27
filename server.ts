@@ -1100,74 +1100,34 @@ app.post('/api/broker/config', (req: Request, res: Response) => {
   }
 });
 
-// Test latency & connection for any broker (Zerodha, Dhan, Angel One, Binance, Bybit, MT4/MT5)
+// Test latency & connection for any broker via Real Official REST APIs
 app.post('/api/broker/test-connection', async (req: Request, res: Response) => {
   try {
-    const { provider, apiKey, apiSecret, clientId, totpSecret, webhookSecret } = req.body || {};
-    const startTime = Date.now();
+    const { provider, apiKey, apiSecret, clientId, accessToken, totpSecret, webhookSecret } = req.body || {};
 
-    // Provider name mapping
-    const providerNames: Record<string, string> = {
-      zerodha: 'Zerodha Kite Connect v3',
-      dhan: 'DhanHQ SuperFast API v2',
-      angelone: 'Angel One SmartAPI',
-      upstox: 'Upstox Pro API v2',
-      fyers: 'Fyers API v3',
-      '5paisa': '5paisa Open API',
-      aliceblue: 'Alice Blue ANT API',
-      kotakneo: 'Kotak Neo Trade API',
-      shoonya: 'Finvasia Shoonya API',
-      delta: 'Delta Exchange (India & Global F&O / Futures)',
-      binance: 'Binance Futures & Spot API',
-      bybit: 'Bybit Unified Trading API v5',
-      kucoin: 'KuCoin Spot & Margin API',
-      okx: 'OKX v5 REST Gateway',
-      metatrader: 'MetaTrader MT4/MT5 Webhook Bridge',
-      ctrader: 'cTrader Open API',
-    };
+    // Retrieve saved credentials if not passed in body
+    let creds = { apiKey, apiSecret, clientId, accessToken, totpSecret, webhookSecret };
+    if (!apiKey && !accessToken && !clientId && fs.existsSync(BROKER_CONFIG_FILE)) {
+      try {
+        const saved = JSON.parse(fs.readFileSync(BROKER_CONFIG_FILE, 'utf-8'));
+        const matched = saved.find((b: any) => b.provider === provider || b.id?.includes(provider));
+        if (matched) {
+          creds = {
+            apiKey: matched.apiKey || apiKey,
+            apiSecret: matched.apiSecret || apiSecret,
+            clientId: matched.clientId || clientId,
+            accessToken: matched.accessToken || matched.apiKey || accessToken,
+            totpSecret: matched.totpSecret || totpSecret,
+            webhookSecret: matched.webhookSecret || webhookSecret,
+          };
+        }
+      } catch (e) {}
+    }
 
-    const isIndianBroker = [
-      'zerodha',
-      'dhan',
-      'angelone',
-      'upstox',
-      'fyers',
-      '5paisa',
-      'aliceblue',
-      'kotakneo',
-      'shoonya',
-    ].includes(provider);
+    // Call Real Official Broker API Connection Tester
+    const result = await realBrokerGateway.testConnection(provider, creds);
 
-    const isDelta = provider === 'delta';
-
-    const name = providerNames[provider] || 'Universal Broker Bridge';
-    // Ultra-low latency: Delta (4-6ms), Dhan (8-12ms), Binance (10-15ms)
-    const simulatedLatency = isDelta
-      ? Math.floor(Math.random() * 3) + 4
-      : Math.floor(Math.random() * 8) + 8;
-
-    const accountType = isDelta
-      ? 'Delta Exchange F&O, Options & Futures Margin (India / Global)'
-      : isIndianBroker
-      ? 'Indian Demat / F&O (NSE / BSE / MCX)'
-      : provider === 'metatrader' || provider === 'ctrader'
-      ? 'Forex & CFD / Prop'
-      : 'Crypto Unified Account';
-
-    const capabilities = [
-      'Real-Time Orders',
-      'Crypto F&O & Futures',
-      'Stop Loss & Target',
-      'Trailing SL',
-      'Zero-Delay WebSocket Matching',
-      'Direct API Execution',
-    ];
-
-    const message = isDelta
-      ? `⚡ Delta Exchange API key verified! Ultra-fast sub-millisecond execution pipeline active. Zero delay, zero errors.`
-      : `Successfully connected to ${name}. Ping latency: ${simulatedLatency}ms. High-speed trading bridge active with 0 lag.`;
-
-    // Persist verified broker status to disk
+    // Persist verified connection state to server storage
     try {
       if (fs.existsSync(BROKER_CONFIG_FILE)) {
         const currentBrokers = JSON.parse(fs.readFileSync(BROKER_CONFIG_FILE, 'utf-8'));
@@ -1175,14 +1135,16 @@ app.post('/api/broker/test-connection', async (req: Request, res: Response) => {
           if (b.provider === provider) {
             return {
               ...b,
-              isConnected: true,
-              status: 'CONNECTED',
-              latencyMs: simulatedLatency,
-              lastSyncedAt: 'Just now',
-              apiKey: apiKey || b.apiKey || 'live_key_auth_verified',
-              apiSecret: apiSecret || b.apiSecret,
-              clientId: clientId || b.clientId,
-              totpSecret: totpSecret || b.totpSecret,
+              isConnected: result.status === 'CONNECTED',
+              status: result.status,
+              latencyMs: result.latencyMs,
+              lastSyncedAt: result.status === 'CONNECTED' ? new Date().toISOString() : b.lastSyncedAt,
+              apiKey: creds.apiKey || b.apiKey,
+              apiSecret: creds.apiSecret || b.apiSecret,
+              clientId: creds.clientId || b.clientId,
+              accessToken: creds.accessToken || b.accessToken,
+              availableMargin: result.availableMargin !== undefined ? result.availableMargin : b.availableMargin,
+              accountName: result.accountName || b.accountName,
             };
           }
           return b;
@@ -1190,328 +1152,114 @@ app.post('/api/broker/test-connection', async (req: Request, res: Response) => {
         fs.writeFileSync(BROKER_CONFIG_FILE, JSON.stringify(updatedBrokers, null, 2), 'utf-8');
       }
     } catch (saveErr) {
-      console.warn('Could not auto-save verified broker to disk:', saveErr);
+      console.warn('Could not save verified broker to disk:', saveErr);
     }
 
-    res.json({
-      success: true,
-      provider,
-      providerName: name,
-      status: 'CONNECTED',
-      latencyMs: simulatedLatency,
-      serverTime: new Date().toISOString(),
-      accountType,
-      capabilities,
-      message,
-    });
+    res.json(result);
   } catch (err: any) {
-    console.error('Error testing broker connection:', err);
-    res.status(500).json({ success: false, error: 'Failed to test broker connection.' });
+    console.error('Error testing real broker connection:', err);
+    res.status(500).json({
+      success: false,
+      status: 'ERROR',
+      provider: req.body?.provider,
+      latencyMs: 0,
+      message: `Failed to test broker connection: ${err.message}`,
+      error: err.message,
+    });
   }
 });
 
-// 1-Click Sync Trades from Connected Broker API
+// Fetch Real Open Positions from Connected Broker API
+app.get('/api/broker/positions', async (req: Request, res: Response) => {
+  try {
+    const provider = (req.query.provider as string) || 'dhan';
+    let creds: any = {};
+    if (fs.existsSync(BROKER_CONFIG_FILE)) {
+      try {
+        const saved = JSON.parse(fs.readFileSync(BROKER_CONFIG_FILE, 'utf-8'));
+        const matched = saved.find((b: any) => b.provider === provider);
+        if (matched) {
+          creds = {
+            apiKey: matched.apiKey,
+            apiSecret: matched.apiSecret,
+            clientId: matched.clientId,
+            accessToken: matched.accessToken || matched.apiKey,
+          };
+        }
+      } catch (e) {}
+    }
+
+    const result = await realBrokerGateway.getPositions(provider, creds);
+    res.json(result);
+  } catch (err: any) {
+    res.status(500).json({ success: false, positions: [], error: err.message });
+  }
+});
+
+// Sync Real Trades from Connected Official Broker API
 app.post('/api/broker/sync-trades', async (req: Request, res: Response) => {
   try {
     const { provider } = req.body || {};
-    const now = new Date();
-    const todayStr = now.toISOString().split('T')[0];
-
-    // Generate accurate, clean trades based on the selected broker's market domain
-    let sampleBrokerTrades: any[] = [];
-
-    const isIndian = [
-      'zerodha',
-      'dhan',
-      'angelone',
-      'upstox',
-      'fyers',
-      '5paisa',
-      'aliceblue',
-      'kotakneo',
-      'shoonya',
-    ].includes(provider);
-
-    if (isIndian) {
-      sampleBrokerTrades = [
-        {
-          id: `trade-sync-${Date.now()}-1`,
-          openDate: new Date(Date.now() - 3600000 * 4).toISOString(),
-          symbol: 'NIFTY 24800 CE',
-          market: 'Stocks',
-          direction: 'LONG',
-          entryPrice: 142.5,
-          exitPrice: 188.0,
-          stopLoss: 125.0,
-          targetPrice: 185.0,
-          quantity: 150,
-          positionSizeUsd: 21375,
-          leverage: 1,
-          pnl: 6825.0,
-          pnlPercent: 31.9,
-          riskRewardRatio: 2.6,
-          strategy: 'Breakout / Expansion',
-          status: 'WIN',
-          emotionBefore: 'Disciplined',
-          fees: 45.0,
-          tags: ['NSE', 'F&O', 'ORB', provider.toUpperCase()],
-          notes: `Auto-synced via ${provider.toUpperCase()} API. Clean 5m breakout above pre-market resistance with volume expansion.`,
-        },
-        {
-          id: `trade-sync-${Date.now()}-2`,
-          openDate: new Date(Date.now() - 3600000 * 2).toISOString(),
-          symbol: 'BANKNIFTY 52400 PE',
-          market: 'Stocks',
-          direction: 'LONG',
-          entryPrice: 285.0,
-          exitPrice: 345.0,
-          stopLoss: 255.0,
-          targetPrice: 350.0,
-          quantity: 60,
-          positionSizeUsd: 17100,
-          leverage: 1,
-          pnl: 3600.0,
-          pnlPercent: 21.0,
-          riskRewardRatio: 2.0,
-          strategy: 'Order Block / Smart Money (SMC)',
-          status: 'WIN',
-          emotionBefore: 'Disciplined',
-          fees: 40.0,
-          tags: ['BankNifty', 'Options', provider.toUpperCase()],
-          notes: `Auto-synced via ${provider.toUpperCase()} API. Liquidity sweep rejection at round number 52,500.`,
-        },
-        {
-          id: `trade-sync-${Date.now()}-3`,
-          openDate: new Date(Date.now() - 3600000).toISOString(),
-          symbol: 'RELIANCE',
-          market: 'Stocks',
-          direction: 'LONG',
-          entryPrice: 2980.0,
-          exitPrice: 3018.0,
-          stopLoss: 2960.0,
-          targetPrice: 3020.0,
-          quantity: 50,
-          positionSizeUsd: 149000,
-          leverage: 1,
-          pnl: 1900.0,
-          pnlPercent: 1.27,
-          riskRewardRatio: 1.9,
-          strategy: 'Support & Resistance Bounce',
-          status: 'WIN',
-          emotionBefore: 'Confident',
-          fees: 35.0,
-          tags: ['Equity', 'Intraday', provider.toUpperCase()],
-          notes: `Auto-synced via ${provider.toUpperCase()} API. Heavy institutional accumulation near 50-day moving average.`,
-        },
-      ];
-    } else if (provider === 'metatrader' || provider === 'ctrader') {
-      sampleBrokerTrades = [
-        {
-          id: `trade-sync-${Date.now()}-1`,
-          openDate: new Date(Date.now() - 3600000 * 5).toISOString(),
-          symbol: 'XAU/USD',
-          market: 'Commodities',
-          direction: 'LONG',
-          entryPrice: 2642.5,
-          exitPrice: 2668.0,
-          stopLoss: 2632.0,
-          targetPrice: 2670.0,
-          quantity: 0.5,
-          positionSizeUsd: 13212.5,
-          leverage: 20,
-          pnl: 1275.0,
-          pnlPercent: 4.8,
-          riskRewardRatio: 2.4,
-          strategy: 'Liquidity Sweep',
-          status: 'WIN',
-          emotionBefore: 'Disciplined',
-          fees: 15.0,
-          tags: ['Gold', 'Forex', 'MT5-Bridge'],
-          notes: `Auto-synced via MT4/MT5 Webhook Bridge. Asian low swept followed by 15m Change of Character (CHoCH).`,
-        },
-        {
-          id: `trade-sync-${Date.now()}-2`,
-          openDate: new Date(Date.now() - 3600000 * 2).toISOString(),
-          symbol: 'EUR/USD',
-          market: 'Forex',
-          direction: 'SHORT',
-          entryPrice: 1.0845,
-          exitPrice: 1.0792,
-          stopLoss: 1.0870,
-          targetPrice: 1.0785,
-          quantity: 1.0,
-          positionSizeUsd: 100000,
-          leverage: 30,
-          pnl: 530.0,
-          pnlPercent: 2.1,
-          riskRewardRatio: 2.1,
-          strategy: 'Fair Value Gap (FVG)',
-          status: 'WIN',
-          emotionBefore: 'Neutral',
-          fees: 12.0,
-          tags: ['EURUSD', 'NewYork', 'MT5-Bridge'],
-          notes: `Auto-synced via MT4/MT5 Bridge. High probability alignment with macro USD strength post-economic news.`,
-        },
-      ];
-    } else if (provider === 'delta') {
-      // Delta Exchange (India & Global F&O / Perpetuals / Options)
-      sampleBrokerTrades = [
-        {
-          id: `trade-sync-${Date.now()}-1`,
-          openDate: new Date(Date.now() - 3600000 * 4).toISOString(),
-          symbol: 'BTC 95000 CALL',
-          market: 'Crypto',
-          direction: 'LONG',
-          entryPrice: 1240.0,
-          exitPrice: 1980.0,
-          stopLoss: 980.0,
-          targetPrice: 2000.0,
-          quantity: 1.5,
-          positionSizeUsd: 1860,
-          leverage: 10,
-          pnl: 1110.0,
-          pnlPercent: 59.6,
-          riskRewardRatio: 2.84,
-          strategy: 'Breakout / Expansion',
-          status: 'WIN',
-          emotionBefore: 'Disciplined',
-          fees: 8.5,
-          tags: ['DeltaExchange', 'Options', 'BTC-CALL', 'F&O'],
-          notes: 'Executed via Delta Exchange F&O API. High delta option momentum breakout aligned with 15m volume expansion.',
-        },
-        {
-          id: `trade-sync-${Date.now()}-2`,
-          openDate: new Date(Date.now() - 3600000 * 2).toISOString(),
-          symbol: 'BTC-USD Perpetual',
-          market: 'Crypto',
-          direction: 'LONG',
-          entryPrice: 67450.0,
-          exitPrice: 69200.0,
-          stopLoss: 66800.0,
-          targetPrice: 69300.0,
-          quantity: 0.5,
-          positionSizeUsd: 33725,
-          leverage: 20,
-          pnl: 875.0,
-          pnlPercent: 51.8,
-          riskRewardRatio: 2.69,
-          strategy: 'Order Block / Smart Money (SMC)',
-          status: 'WIN',
-          emotionBefore: 'Confident',
-          fees: 14.2,
-          tags: ['DeltaExchange', 'Perpetual', 'SMC', 'ZeroLag'],
-          notes: 'Executed via Delta Exchange sub-millisecond matching engine. Optimal Trade Entry (OTE) demand mitigation.',
-        },
-        {
-          id: `trade-sync-${Date.now()}-3`,
-          openDate: new Date(Date.now() - 3600000).toISOString(),
-          symbol: 'ETH-USD Perpetual',
-          market: 'Crypto',
-          direction: 'LONG',
-          entryPrice: 3420.0,
-          exitPrice: 3540.0,
-          stopLoss: 3370.0,
-          targetPrice: 3550.0,
-          quantity: 4.0,
-          positionSizeUsd: 13680,
-          leverage: 15,
-          pnl: 480.0,
-          pnlPercent: 52.6,
-          riskRewardRatio: 2.4,
-          strategy: 'Liquidity Sweep',
-          status: 'WIN',
-          emotionBefore: 'Disciplined',
-          fees: 9.8,
-          tags: ['DeltaExchange', 'ETH', 'Futures'],
-          notes: 'Executed via Delta Exchange API. Asian low sweep with 15m bullish Change of Character.',
-        },
-      ];
-    } else {
-      // Binance, Bybit, KuCoin, OKX
-      sampleBrokerTrades = [
-        {
-          id: `trade-sync-${Date.now()}-1`,
-          openDate: new Date(Date.now() - 3600000 * 6).toISOString(),
-          symbol: 'BTC/USDT',
-          market: 'Crypto',
-          direction: 'LONG',
-          entryPrice: 67200.0,
-          exitPrice: 69450.0,
-          stopLoss: 66300.0,
-          targetPrice: 69500.0,
-          quantity: 0.35,
-          positionSizeUsd: 23520,
-          leverage: 5,
-          pnl: 787.5,
-          pnlPercent: 12.5,
-          riskRewardRatio: 2.5,
-          strategy: 'Order Block / Smart Money (SMC)',
-          status: 'WIN',
-          emotionBefore: 'Disciplined',
-          fees: 18.5,
-          tags: ['BTC', 'Futures', provider ? provider.toUpperCase() : 'BINANCE'],
-          notes: `Auto-synced via ${provider ? provider.toUpperCase() : 'BINANCE'} API. Optimal Trade Entry (OTE) mitigation.`,
-        },
-        {
-          id: `trade-sync-${Date.now()}-2`,
-          openDate: new Date(Date.now() - 3600000 * 3).toISOString(),
-          symbol: 'SOL/USDT',
-          market: 'Crypto',
-          direction: 'LONG',
-          entryPrice: 178.5,
-          exitPrice: 189.2,
-          stopLoss: 174.0,
-          targetPrice: 190.0,
-          quantity: 20,
-          positionSizeUsd: 3570,
-          leverage: 3,
-          pnl: 214.0,
-          pnlPercent: 6.0,
-          riskRewardRatio: 2.38,
-          strategy: 'Breakout / Expansion',
-          status: 'WIN',
-          emotionBefore: 'Confident',
-          fees: 6.5,
-          tags: ['SOL', 'Breakout', provider ? provider.toUpperCase() : 'CRYPTO'],
-          notes: `Auto-synced via ${provider ? provider.toUpperCase() : 'CRYPTO'} API. 3x relative volume surge on 5m chart.`,
-        },
-        {
-          id: `trade-sync-${Date.now()}-3`,
-          openDate: new Date(Date.now() - 3600000).toISOString(),
-          symbol: 'ETH/USDT',
-          market: 'Crypto',
-          direction: 'SHORT',
-          entryPrice: 3480.0,
-          exitPrice: 3390.0,
-          stopLoss: 3520.0,
-          targetPrice: 3380.0,
-          quantity: 1.5,
-          positionSizeUsd: 5220,
-          leverage: 5,
-          pnl: 135.0,
-          pnlPercent: 3.87,
-          riskRewardRatio: 2.25,
-          strategy: 'Trend Following / Pullback',
-          status: 'WIN',
-          emotionBefore: 'Disciplined',
-          fees: 9.0,
-          tags: ['ETH', 'SupplyRejection', provider ? provider.toUpperCase() : 'CRYPTO'],
-          notes: `Auto-synced via ${provider ? provider.toUpperCase() : 'CRYPTO'} API. 4H supply rejection at daily equilibrium.`,
-        },
-      ];
+    let creds: any = {};
+    if (fs.existsSync(BROKER_CONFIG_FILE)) {
+      try {
+        const saved = JSON.parse(fs.readFileSync(BROKER_CONFIG_FILE, 'utf-8'));
+        const matched = saved.find((b: any) => b.provider === provider);
+        if (matched) {
+          creds = {
+            apiKey: matched.apiKey,
+            apiSecret: matched.apiSecret,
+            clientId: matched.clientId,
+            accessToken: matched.accessToken || matched.apiKey,
+          };
+        }
+      } catch (e) {}
     }
+
+    const result = await realBrokerGateway.getTrades(provider, creds);
+    if (!result.success) {
+      return res.status(400).json({
+        success: false,
+        error: result.error || 'Failed to sync trades: Broker not connected or credentials missing.',
+      });
+    }
+
+    // Convert real trades to TradeOS journal format
+    const formattedTrades = result.trades.map((t) => ({
+      id: `real-${t.id}`,
+      openDate: t.executedAt,
+      symbol: t.symbol,
+      market: ['NSE', 'BSE'].includes(t.exchange) ? 'Stocks' : 'Crypto',
+      direction: t.direction,
+      entryPrice: t.executedPrice,
+      exitPrice: t.executedPrice,
+      stopLoss: 0,
+      targetPrice: 0,
+      quantity: t.quantity,
+      positionSizeUsd: t.quantity * t.executedPrice,
+      leverage: 1,
+      pnl: 0,
+      pnlPercent: 0,
+      riskRewardRatio: 0,
+      strategy: 'Official Broker Execution',
+      status: 'FILLED',
+      emotionBefore: 'Disciplined',
+      fees: t.fee,
+      tags: [provider.toUpperCase(), t.exchange, 'RealAPI'],
+      notes: `Real trade synced from ${provider.toUpperCase()} API. Order ID: ${t.orderId}`,
+    }));
 
     res.json({
       success: true,
       provider,
       syncedAt: new Date().toISOString(),
-      trades: sampleBrokerTrades,
-      count: sampleBrokerTrades.length,
-      message: `Successfully imported ${sampleBrokerTrades.length} verified executed trades from ${provider?.toUpperCase() || 'BROKER'} API.`,
+      trades: formattedTrades,
+      count: formattedTrades.length,
+      message: `Successfully synced ${formattedTrades.length} real executed trades from ${provider?.toUpperCase()} official API.`,
     });
   } catch (err: any) {
-    console.error('Error syncing trades from broker:', err);
-    res.status(500).json({ success: false, error: 'Failed to sync trades from broker API.' });
+    console.error('Error syncing real trades from broker:', err);
+    res.status(500).json({ success: false, error: 'Failed to sync real trades from broker API.' });
   }
 });
 

@@ -51,7 +51,6 @@ import { isIndianMarketAsset, formatAssetPrice } from '../../utils/currencyUtils
 import { OrderConfirmationModal } from './OrderConfirmationModal';
 import { AutoTradeConfigModal } from './AutoTradeConfigModal';
 import { AutoTradeLogModal } from './AutoTradeLogModal';
-import { LiveBrokerToolbar } from './LiveBrokerToolbar';
 import { IndianOptionsChainDrawer, OptionContractSelection } from './IndianOptionsChainDrawer';
 import { BrokerSyncModal } from '../broker/BrokerSyncModal';
 import {
@@ -77,70 +76,6 @@ interface PaperTradingViewProps {
 }
 
 const STORAGE_KEY = 'tradeos_paper_account_v2';
-
-const DEFAULT_BROKER_LIST: BrokerConnection[] = [
-  {
-    id: 'b-delta',
-    provider: 'delta',
-    name: 'Delta Exchange (India F&O & Perpetuals)',
-    category: 'Global Crypto',
-    isConnected: true,
-    apiKey: 'delta_live_fno_key_v2',
-    clientId: 'DELTA-IND-99420',
-    lastSyncedAt: 'Just now',
-    syncedTradesCount: 194,
-    autoSyncEnabled: true,
-    status: 'CONNECTED',
-    latencyMs: 4,
-    accountName: 'Delta F&O & Futures Margin Vault',
-    availableMargin: 38450,
-  },
-  {
-    id: 'b-dhan',
-    provider: 'dhan',
-    name: 'Dhan HQ SuperFast API v2',
-    category: 'Indian Stocks / F&O',
-    isConnected: true,
-    apiKey: 'dhan_live_api_9921',
-    clientId: '1100294821',
-    lastSyncedAt: 'Just now',
-    syncedTradesCount: 142,
-    autoSyncEnabled: true,
-    status: 'CONNECTED',
-    latencyMs: 8,
-    accountName: 'Dhan Trading Account',
-    availableMargin: 245000,
-  },
-  {
-    id: 'b-zerodha',
-    provider: 'zerodha',
-    name: 'Zerodha Kite Connect v3',
-    category: 'Indian Stocks / F&O',
-    isConnected: false,
-    apiKey: 'kite_live_key',
-    clientId: 'ZR8821',
-    syncedTradesCount: 0,
-    autoSyncEnabled: false,
-    status: 'DISCONNECTED',
-    latencyMs: 9,
-    accountName: 'Zerodha Kite Account',
-    availableMargin: 180000,
-  },
-  {
-    id: 'b-binance',
-    provider: 'binance',
-    name: 'Binance Futures & Spot API v3',
-    category: 'Global Crypto',
-    isConnected: false,
-    apiKey: 'binance_live_key',
-    syncedTradesCount: 0,
-    autoSyncEnabled: false,
-    status: 'DISCONNECTED',
-    latencyMs: 12,
-    accountName: 'Binance VIP Vault',
-    availableMargin: 12850,
-  },
-];
 
 // 3 Default High-Conviction Active Running Trades (Ensures zero blank screens across remixes)
 const defaultActivePositions: PaperPosition[] = [
@@ -272,58 +207,10 @@ export const PaperTradingView: React.FC<PaperTradingViewProps> = ({
     });
   };
 
-  // -------------------------------------------------------------
-  // LIVE BROKER API & TERMINAL MODE SWITCHER
-  // -------------------------------------------------------------
-  const [tradingMode, setTradingMode] = useState<'PRACTICE' | 'LIVE_BROKER'>(() => {
-    try {
-      const saved = localStorage.getItem('tradeos_terminal_mode');
-      if (saved === 'LIVE_BROKER' || saved === 'PRACTICE') return saved;
-    } catch {}
-    return 'PRACTICE';
-  });
-
-  const [connectedBrokers, setConnectedBrokers] = useState<BrokerConnection[]>(() => {
-    try {
-      const saved = localStorage.getItem('tradeos_connected_brokers');
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
-      }
-    } catch {}
-    return DEFAULT_BROKER_LIST;
-  });
-
-  const [activeBroker, setActiveBroker] = useState<BrokerConnection | null>(() => {
-    return DEFAULT_BROKER_LIST.find((b) => b.isConnected) || DEFAULT_BROKER_LIST[0];
-  });
-
   const [isBrokerSyncModalOpen, setIsBrokerSyncModalOpen] = useState<boolean>(false);
   const [isOptionsChainOpen, setIsOptionsChainOpen] = useState<boolean>(false);
   const [selectedOptionContract, setSelectedOptionContract] = useState<OptionContractSelection | null>(null);
   const [marketSegmentTab, setMarketSegmentTab] = useState<'ALL' | 'CRYPTO' | 'FOREX' | 'COMMODITIES' | 'INDIAN_FNO'>('ALL');
-  const [isExecutingLiveOrder, setIsExecutingLiveOrder] = useState<boolean>(false);
-
-  const handleChangeTradingMode = (mode: 'PRACTICE' | 'LIVE_BROKER') => {
-    setTradingMode(mode);
-    try {
-      localStorage.setItem('tradeos_terminal_mode', mode);
-    } catch {}
-    showToast(
-      'info',
-      mode === 'LIVE_BROKER'
-        ? `⚡ Live Broker API Mode Activated (${activeBroker?.name || 'Exchange Bridge Active'})`
-        : '🛡️ Switched to Practice Virtual Simulator ($10,000 Demo Capital)'
-    );
-  };
-
-  const handleSelectBroker = (broker: BrokerConnection) => {
-    setActiveBroker(broker);
-    setConnectedBrokers((prev) =>
-      prev.map((b) => (b.id === broker.id ? { ...b, isConnected: true, status: 'CONNECTED' } : b))
-    );
-    showToast('success', `🟢 Connected to ${broker.name} (${broker.latencyMs || 4}ms Latency • 0 Lag)`);
-  };
 
   const handleTriggerOpenBrokerSync = () => {
     if (onOpenBrokerSync) {
@@ -1444,65 +1331,6 @@ export const PaperTradingView: React.FC<PaperTradingViewProps> = ({
       };
     }
 
-    if (tradingMode === 'LIVE_BROKER' && activeBroker) {
-      setIsExecutingLiveOrder(true);
-      try {
-        const response = await fetch('/api/broker/execute-order', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            brokerId: activeBroker.provider,
-            symbol: effectiveSymbol,
-            direction,
-            orderType: 'MARKET',
-            quantity: Number(activeQuantity.toFixed(4)),
-            leverage,
-            price: effectivePrice,
-            stopLoss: stopLossPrice,
-            takeProfit: takeProfitPrice,
-            trailingStopLoss: tslConfig,
-            currency: effectiveCurrency,
-            isOptionContract: Boolean(selectedOptionContract),
-            optionType: selectedOptionContract?.optionType,
-            strikePrice: selectedOptionContract?.strikePrice,
-            expiryDate: selectedOptionContract?.expiryDate,
-            lotSize: selectedOptionContract?.lotSize,
-          }),
-        });
-        const data = await response.json();
-        if (data.success && data.position) {
-          const livePos: PaperPosition = {
-            ...data.position,
-            isLiveBrokerTrade: true,
-            brokerProvider: activeBroker.provider,
-            brokerOrderId: data.order?.brokerOrderId || `ORD-${Date.now()}`,
-            currency: effectiveCurrency,
-          };
-          setAccount((prev) => ({
-            ...prev,
-            marginUsed: Number((prev.marginUsed + computedMarginRequired).toFixed(2)),
-            freeCollateral: Number((prev.freeCollateral - computedMarginRequired).toFixed(2)),
-            positions: [livePos, ...prev.positions],
-          }));
-
-          const priceLabel = effectiveCurrency === 'INR' ? `₹${effectivePrice.toLocaleString()}` : `$${effectivePrice.toLocaleString()}`;
-          showToast(
-            'success',
-            `🟢 [${activeBroker.name}] Order Filled: ${direction} ${livePos.quantity} ${effectiveSymbol} @ ${priceLabel} (${data.executionLatencyMs || activeBroker.latencyMs || 4}ms 0-Lag Execution)`
-          );
-          setActivePositionsTab('POSITIONS');
-          try {
-            confetti({ particleCount: 40, spread: 60, origin: { y: 0.8 } });
-          } catch {}
-          return;
-        }
-      } catch (err) {
-        console.warn('Live broker execution failed, falling back to local engine:', err);
-      } finally {
-        setIsExecutingLiveOrder(false);
-      }
-    }
-
     const newPosition: PaperPosition = {
       id: `paper-${Date.now()}`,
       symbol: effectiveSymbol,
@@ -1595,8 +1423,6 @@ export const PaperTradingView: React.FC<PaperTradingViewProps> = ({
       status: 'PENDING',
       placedAt: new Date().toLocaleTimeString(),
       signalType: 'Limit Order SMC Setup',
-      isLiveBrokerTrade: tradingMode === 'LIVE_BROKER',
-      brokerProvider: tradingMode === 'LIVE_BROKER' ? activeBroker?.provider : undefined,
     };
 
     setAccount((prev) => ({
@@ -1706,7 +1532,7 @@ export const PaperTradingView: React.FC<PaperTradingViewProps> = ({
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            brokerId: pos.brokerProvider || activeBroker?.provider || 'delta',
+            brokerId: pos.brokerProvider || 'delta',
             positionId: pos.id,
             symbol: pos.symbol,
             closeQuantity: pos.quantity,
@@ -1793,7 +1619,7 @@ export const PaperTradingView: React.FC<PaperTradingViewProps> = ({
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            brokerId: editingPosition.brokerProvider || activeBroker?.provider || 'delta',
+            brokerId: editingPosition.brokerProvider || 'delta',
             positionId: editingPosition.id,
             symbol: editingPosition.symbol,
             stopLoss: editSL > 0 ? editSL : undefined,
@@ -2083,16 +1909,35 @@ export const PaperTradingView: React.FC<PaperTradingViewProps> = ({
         }
       />
 
-      {/* Unified Live Broker vs Practice Mode Toolbar */}
-      <LiveBrokerToolbar
-        tradingMode={tradingMode}
-        onChangeTradingMode={handleChangeTradingMode}
-        connectedBrokers={connectedBrokers}
-        activeBroker={activeBroker}
-        onSelectBroker={handleSelectBroker}
-        onOpenBrokerSync={handleTriggerOpenBrokerSync}
-        isIndianAsset={selectedAsset.category === 'Indian Stocks / F&O'}
-      />
+      {/* Paper Trading Information & Brokers Link Banner */}
+      <div className="p-3.5 rounded-xl bg-[#0E131F] border border-[#1C263C] flex flex-wrap items-center justify-between gap-3 shadow-md">
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
+            <ShieldCheck className="w-4 h-4" />
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="font-bold text-sm text-white">Paper Trading Simulator</span>
+              <span className="px-2 py-0.5 rounded text-[10px] font-black uppercase bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                100% Risk-Free Demo ($10K Virtual)
+              </span>
+            </div>
+            <p className="text-xs text-slate-400">
+              Practice market, limit, trailing stop loss & options strategies with zero financial risk.
+            </p>
+          </div>
+        </div>
+
+        <button
+          type="button"
+          onClick={() => onNavigateTab('brokers')}
+          className="px-3.5 py-2 rounded-lg bg-[#121827] hover:bg-[#1A2234] border border-[#1C263C] text-slate-300 hover:text-white text-xs font-bold transition flex items-center gap-2 cursor-pointer shadow-sm ml-auto"
+        >
+          <Zap className="w-3.5 h-3.5 text-amber-400" />
+          <span>Real Broker Accounts & Live Execution</span>
+          <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
+        </button>
+      </div>
 
       {/* Sentinel Auto-Trader Master Hero Ribbon */}
       {(() => {
@@ -2370,16 +2215,10 @@ export const PaperTradingView: React.FC<PaperTradingViewProps> = ({
             <div className="flex items-center gap-2">
               <Zap className="w-4 h-4 text-emerald-400" />
               <h3 className="font-bold text-base text-white">
-                {tradingMode === 'LIVE_BROKER' ? `⚡ ${activeBroker?.name || 'Live Broker'} Terminal` : 'Place Virtual Order'}
+                Place Virtual Order
               </h3>
             </div>
             <div className="flex items-center gap-2">
-              {tradingMode === 'LIVE_BROKER' && (
-                <span className="text-[10px] font-black uppercase text-amber-400 bg-amber-500/10 border border-amber-500/30 px-2 py-0.5 rounded-full flex items-center gap-1 animate-pulse">
-                  <span className="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
-                  <span>LIVE BROKER ROUTE</span>
-                </span>
-              )}
               <span className="text-[11px] font-mono font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded">
                 {isIndianAsset(selectedAsset) ? `Live: ₹${selectedAsset.price.toLocaleString('en-IN')}` : `Live: $${selectedAsset.price.toLocaleString()}`}
               </span>
@@ -4152,11 +3991,6 @@ export const PaperTradingView: React.FC<PaperTradingViewProps> = ({
         <BrokerSyncModal
           isOpen={isBrokerSyncModalOpen}
           onClose={() => setIsBrokerSyncModalOpen(false)}
-          onBrokersUpdated={(updatedList) => {
-            setConnectedBrokers(updatedList);
-            const primary = updatedList.find((b) => b.isConnected);
-            if (primary) setActiveBroker(primary);
-          }}
         />
       )}
     </div>

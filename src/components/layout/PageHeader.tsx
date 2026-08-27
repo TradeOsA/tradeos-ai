@@ -36,7 +36,7 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
   const getBadgeStyle = () => {
     switch (badgeVariant) {
       case 'indigo':
-        return 'text-indigo-400 bg-indigo-500/10 border-indigo-500/30';
+        return 'text-blue-400 bg-blue-500/10 border-blue-500/30';
       case 'amber':
         return 'text-amber-400 bg-amber-500/10 border-amber-500/30';
       case 'cyan':
@@ -55,20 +55,20 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
 
   return (
     <div
-      className={`p-4 sm:p-5 rounded-xl bg-[#0E131F] border border-[#1C263C] flex flex-col gap-3.5 ${className}`}
+      className={`p-3.5 sm:p-4 rounded-xl bg-[#101520] border border-[#1C2433] flex flex-col gap-3 shadow-sm ${className}`}
     >
-      {/* Top Bar: Back & Home Actions + Breadcrumb trail (only if needed) */}
+      {/* Top Bar: Back & Home Actions + Breadcrumb trail */}
       {hasTopBar && (
-        <div className="flex flex-wrap items-center justify-between gap-3 pb-2.5 border-b border-[#1C263C]">
-          <div className="flex items-center gap-2">
-            {/* Quick Back Button (Only visible on nested/sub pages when onBack is present and showBackButton is true) */}
+        <div className="flex flex-wrap items-center justify-between gap-2.5 pb-2 border-b border-[#1C2433]">
+          <div className="flex items-center gap-1.5">
+            {/* Quick Back Button */}
             {hasBackAction && (
               <button
                 onClick={onBack}
-                className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white/[0.04] hover:bg-white/[0.08] text-slate-300 hover:text-white border border-white/10 text-xs font-semibold transition-all cursor-pointer group shadow-sm"
-                title="Go back to previous view"
+                className="flex items-center gap-1 px-2 py-0.5 rounded-md bg-[#0D121C] hover:bg-[#151C2B] text-slate-300 hover:text-white border border-[#1C2433] text-xs font-semibold transition-all cursor-pointer group shadow-sm"
+                title="Go back"
               >
-                <ArrowLeft className="w-3.5 h-3.5 group-hover:-translate-x-0.5 transition-transform text-emerald-400" />
+                <ArrowLeft className="w-3.5 h-3.5 group-hover:-translate-x-0.5 transition-transform text-blue-400" />
                 <span>Back</span>
               </button>
             )}
@@ -77,8 +77,8 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
             {showHomeButton && (
               <button
                 onClick={onHome || (() => onNavigateTab && onNavigateTab('dashboard'))}
-                className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white/[0.04] hover:bg-white/[0.08] text-slate-300 hover:text-white border border-white/10 text-xs font-semibold transition-all cursor-pointer shadow-sm"
-                title="Return to Live Terminal (Home)"
+                className="flex items-center gap-1 px-2 py-0.5 rounded-md bg-[#0D121C] hover:bg-[#151C2B] text-slate-300 hover:text-white border border-[#1C2433] text-xs font-semibold transition-all cursor-pointer shadow-sm"
+                title="Return to Live Terminal"
               >
                 <Home className="w-3.5 h-3.5 text-slate-400" />
                 <span className="hidden xs:inline">Home</span>
@@ -94,28 +94,28 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
       )}
 
       {/* Main Title Banner & Actions */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-3.5">
-        <div className="space-y-1">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
+        <div className="space-y-0.5">
           <div className="flex items-center gap-2 flex-wrap">
             {badge && (
               <span
-                className={`text-[10px] font-bold uppercase tracking-wider border px-2 py-0.5 rounded ${getBadgeStyle()}`}
+                className={`text-[9px] font-black uppercase tracking-wider border px-1.5 py-0.2 rounded ${getBadgeStyle()}`}
               >
                 {badge}
               </span>
             )}
-            <span className="text-[10px] font-mono text-slate-400 hidden sm:inline">
-              TradeosAi Pro Terminal
+            <span className="text-[9px] font-mono text-slate-500 hidden sm:inline">
+              TRADEOS PRO TERMINAL
             </span>
           </div>
 
-          <div className="flex items-center gap-2.5">
+          <div className="flex items-center gap-2">
             {Icon && (
-              <div className="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 shrink-0">
-                <Icon className="w-4 h-4" />
+              <div className="w-7 h-7 rounded-md bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400 shrink-0">
+                <Icon className="w-3.5 h-3.5" />
               </div>
             )}
-            <h1 className="text-lg sm:text-xl font-black text-white tracking-tight">
+            <h1 className="text-base sm:text-lg font-black text-white tracking-tight">
               {title}
             </h1>
           </div>
@@ -133,3 +133,4 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
     </div>
   );
 };
+

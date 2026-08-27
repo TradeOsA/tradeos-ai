@@ -2,46 +2,54 @@
 
 @layer base {
   * {
-    border-color: #1F2937;
+    border-color: var(--border-subtle, #1C2433);
   }
 }
 
 /* =========================================================================
-   TRADEOS PRO - INSTITUTIONAL TERMINAL DESIGN SYSTEM
-   Deep Slate Dark & Crisp Institutional Aesthetics
+   TRADEOS PRO - PREMIUM FINANCIAL TECHNOLOGY DESIGN SYSTEM
+   Deep Charcoal / Near-Black Palette & Institutional Trading Aesthetics
    ========================================================================= */
 
 :root {
-  --bg-main: #090D16;
-  --bg-surface: #111827;
-  --bg-card: #111827;
-  --bg-input: #0D1320;
-  --border-subtle: #1F2937;
-  --border-strong: #374151;
+  --bg-main: #0B0E14;
+  --bg-surface: #101520;
+  --bg-elevated: #151C2B;
+  --bg-card: #101520;
+  --bg-input: #0D121C;
+  --border-subtle: #1C2433;
+  --border-strong: #2A364B;
   --border-active: #3B82F6;
-  --text-main: #F9FAFB;
-  --text-muted: #9CA3AF;
+  --text-main: #F3F4F6;
+  --text-secondary: #9CA3AF;
+  --text-muted: #6B7280;
   --accent-blue: #3B82F6;
   --accent-emerald: #10B981;
-  --accent-rose: #EF4444;
+  --accent-rose: #F43F5E;
+  --accent-amber: #F59E0B;
+  --accent-cyan: #06B6D4;
 }
 
 html.light {
   --bg-main: #F8FAFC;
   --bg-surface: #FFFFFF;
+  --bg-elevated: #F1F5F9;
   --bg-card: #FFFFFF;
   --bg-input: #FFFFFF;
-  --border-subtle: #E5E7EB;
-  --border-strong: #D1D5DB;
+  --border-subtle: #E2E8F0;
+  --border-strong: #CBD5E1;
   --border-active: #2563EB;
-  --text-main: #111827;
-  --text-muted: #6B7280;
+  --text-main: #0F172A;
+  --text-secondary: #475569;
+  --text-muted: #64748B;
   --accent-blue: #2563EB;
   --accent-emerald: #059669;
-  --accent-rose: #DC2626;
+  --accent-rose: #E11D48;
+  --accent-amber: #D97706;
+  --accent-cyan: #0891B2;
 }
 
-/* Ultra-Crisp Font Rendering & 120 FPS Direct GPU Blitting */
+/* Ultra-Crisp Font Rendering & Financial Monospaced Numerals */
 html, body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -50,55 +58,77 @@ html, body {
   background-color: var(--bg-main);
   color: var(--text-main);
   font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11', 'tnum';
+  font-variant-numeric: tabular-nums;
   transform: translateZ(0);
 }
 
-/* Base Panel Classes for Dark Mode */
+/* Financial Monospaced Utility */
+.font-financial,
+.mono-numbers {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-feature-settings: "tnum";
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+}
+
+/* Clean Institutional Panels & Containers */
 .glass-panel,
 .pro-card {
-  background-color: #111827 !important;
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
-  border: 1px solid #1F2937 !important;
-  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.4) !important;
+  background-color: var(--bg-surface) !important;
+  border: 1px solid var(--border-subtle) !important;
+  box-shadow: 0 4px 16px -2px rgba(0, 0, 0, 0.45) !important;
 }
 
 .glass-panel-subtle {
-  background-color: #0D1320 !important;
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
-  border: 1px solid #1F2937 !important;
+  background-color: var(--bg-input) !important;
+  border: 1px solid var(--border-subtle) !important;
 }
 
 .glass-card,
 .pro-card-interactive {
-  background-color: #111827 !important;
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
-  border: 1px solid #1F2937 !important;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.25) !important;
+  background-color: var(--bg-surface) !important;
+  border: 1px solid var(--border-subtle) !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3) !important;
   transition: transform 0.15s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.15s ease, background-color 0.15s ease !important;
 }
 
 .glass-card-hover:hover,
 .pro-card-interactive:hover {
-  border-color: #374151 !important;
-  background-color: #161F30 !important;
-  box-shadow: 0 6px 20px -4px rgba(0, 0, 0, 0.5) !important;
+  border-color: var(--border-strong) !important;
+  background-color: var(--bg-elevated) !important;
+  box-shadow: 0 6px 18px -3px rgba(0, 0, 0, 0.5) !important;
   transform: translateY(-1px);
 }
 
 .glass-pill {
-  background-color: #111827 !important;
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
-  border: 1px solid #1F2937 !important;
+  background-color: var(--bg-surface) !important;
+  border: 1px solid var(--border-subtle) !important;
   transition: background-color 0.15s ease, border-color 0.15s ease;
 }
 
 .glass-pill:hover {
-  background-color: #161F30 !important;
-  border-color: #374151 !important;
+  background-color: var(--bg-elevated) !important;
+  border-color: var(--border-strong) !important;
+}
+
+/* Custom Financial Table Styling */
+.trade-table-header {
+  background-color: #0D121C;
+  color: #9CA3AF;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-bottom: 1px solid #1C2433;
+}
+
+.trade-table-row {
+  border-bottom: 1px solid #161D2B;
+  transition: background-color 0.12s ease;
+}
+
+.trade-table-row:hover {
+  background-color: #151C2B;
 }
 
 .pro-badge {
